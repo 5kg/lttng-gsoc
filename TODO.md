@@ -4,3 +4,4 @@
 * Benchmark Dyninst instrumentation overhead
   * ~~Update obsolete lttng-ust/tests/benchmark~~
 * Update obsolete lttng-ust/tests/tracepoint (TAP output support)
+* PKGBUILD for Dyninst
