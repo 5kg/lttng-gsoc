@@ -1,0 +1,7 @@
+#!/bin/sh
+
+lttng create; lttng enable-event -a -u; lttng start
+DYNINSTAPI_RT_LIB=/usr/lib/dyninst/libdyninstAPI_RT.so ./mutator ./dyntp.so ./mutatee
+lttng stop
+sleep 1
+lttng view
