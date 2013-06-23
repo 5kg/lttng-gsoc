@@ -1,3 +1,21 @@
+### Performance ###
+* Overhead
+  * Save General Purpose Registers
+  * Save Floating Point Registers
+    * To turn it off: BPatch::setSaveFPR(false)
+    * Might not safe to turn it off if we want to capture floating variables.
+    * Dyninst will attempt to analyse if saving floating point registers is required.
+  * Generate A Stack Frame
+    * To turn it off: BPatch::setInstrStackFrames(false)
+    * Default is false.
+  * Calculate Thread Index
+  * Test and Set Trampoline Guard
+  * Execute User Instrumentation
+  * Unset Trampoline Guard
+  * Clean Stack Frame
+  * Restore Floating Point Registers
+  * Restore General Purpose Registers
+
 ### Debug ###
 ~~~~~~~~~
 DYNINST_DEBUG_MALWARE: Enabling DyninstAPI malware debug
