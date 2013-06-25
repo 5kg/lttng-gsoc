@@ -24,14 +24,12 @@ int main (int argc, const char* argv[]) {
     image->findFunction("tpbench", probes);
     BPatch_function *probe = probes[0];
 
-    BPatch_variableExpr* var = image->findVariable("v");
-
-    int* val;
-    val = (int *) var->getBaseAddr();
+    //BPatch_variableExpr* v = tracepoint->findVariable("v")->at(0);
+    BPatch_variableExpr* v = image->findVariable("v");
 
     std::vector<BPatch_snippet*> args;
-    BPatch_constExpr val_expr(val);
-    args.push_back(&val_expr);
+    BPatch_snippet *var_expr = v;
+    args.push_back(var_expr);
     BPatch_funcCallExpr call_probe(*probe, args);
     proc->insertSnippet(call_probe, (tracepoint->findPoint(BPatch_exit))[0]);
 
