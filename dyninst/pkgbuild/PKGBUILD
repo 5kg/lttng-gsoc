@@ -1,0 +1,32 @@
+# Maintainer: Zifei Tong <soariez@gmail.com>
+
+pkgname=dyninst
+pkgver=8.1.1
+pkgrel=1
+pkgdesc="An API for run-time code generation."
+url="http://www.dyninst.org"
+arch=('x86_64' 'i686')
+license=('LGPLv2+')
+# TODO
+depends=('boost')
+makedepends=()
+conflicts=()
+replaces=()
+backup=()
+install=''
+source=("http://www.dyninst.org/sites/default/files/downloads/${pkgname}/${pkgver}/DyninstAPI-${pkgver}.tgz"
+        "dyninst_linux-vdso.patch")
+sha1sums=('ec01de60e80ad39386c9d50f9a877766703b4677'
+          '615e744fa877e22d576d828e9b56e5e4825d5af4')
+
+build() {
+  cd "${srcdir}/DyninstAPI-${pkgver}"
+  patch -Np1 -i ../dyninst_linux-vdso.patch
+  ./configure --includedir=/usr/include/dyninst --libdir=/usr/lib/dyninst
+  make
+}
+
+package() {
+  cd "${srcdir}/DyninstAPI-${pkgver}"
+  make DESTDIR="${pkgdir}" install
+}
