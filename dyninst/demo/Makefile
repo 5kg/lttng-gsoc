@@ -13,10 +13,10 @@ mutator.o: mutator.cpp
 	g++ -g $< -c -o $@
 
 mutatee: mutatee.o
-	gcc $^ -std=gnu99 -lrt -o $@
+	gcc $^ -std=gnu99 -g -lrt -o $@
 
 mutatee.o: mutatee.c
-	gcc $< -std=gnu99 -c -o $@
+	gcc $< -std=gnu99 -g -c -o $@
 
 .PHONY: clean
 clean:

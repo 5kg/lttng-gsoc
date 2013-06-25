@@ -13,6 +13,7 @@ void bar() {
 int main()
 {
     printf("Hello World!\n");
-    foo();
+    for (int i = 0; i < 10; ++i)
+        foo();
     return 0;
 }
