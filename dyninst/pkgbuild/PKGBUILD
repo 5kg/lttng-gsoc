@@ -22,7 +22,7 @@ sha1sums=('ec01de60e80ad39386c9d50f9a877766703b4677'
 build() {
   cd "${srcdir}/DyninstAPI-${pkgver}"
   patch -Np1 -i ../dyninst_linux-vdso.patch
-  ./configure --includedir=/usr/include/dyninst --libdir=/usr/lib/dyninst
+  ./configure
   make
 }
 
