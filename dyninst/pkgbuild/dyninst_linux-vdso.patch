@@ -1,3 +1,5 @@
+See https://lists.cs.wisc.edu/archive/dyninst-api/2013/msg00121.shtml for more details.
+
 diff --git a/common/src/addrtranslate-sysv.C b/common/src/addrtranslate-sysv.C
 index fd945b6..76ab6b3 100644
 --- a/common/src/addrtranslate-sysv.C
