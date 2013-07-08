@@ -11,7 +11,7 @@ int main (int argc, const char* argv[]) {
     BPatch_process *proc = bpatch.processCreate(argv[2], argv + 2);
 
     // Options to tune performance
-    //bpatch.setTrampRecursive(true);
+    bpatch.setTrampRecursive(true);
     //bpatch.setSaveFPR(false);
     //bpatch.setInstrStackFrames(false);
 
