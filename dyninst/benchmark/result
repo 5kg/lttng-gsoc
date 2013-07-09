@@ -1,0 +1,77 @@
+No tracing:
+1.010086s
+0.997168s
+1.002658s
+0.994611s
+1.003076s
+0.993119s
+1.004749s
+1.018379s
+0.989207s
+1.001833s
+avg: 1.001488s
+
+Static tracepoint:
+1.162079s
+1.151527s
+1.156042s
+1.152185s
+1.154313s
+1.168752s
+1.165859s
+1.149948s
+1.154773s
+1.155101s
+avg: 1.157057s
+
+Dynamic tracepoint using dyninst (default option):
+1.213598s
+1.210825s
+1.218013s
+1.218661s
+1.218214s
+1.237367s
+1.216498s
+1.223544s
+1.213633s
+1.220120s
+avg: 1.219047s
+
+Dynamic tracepoint using dyninst (setTrampRecursive=true):
+1.168454s
+1.170053s
+1.163418s
+1.166606s
+1.168442s
+1.205561s
+1.170468s
+1.172551s
+1.161642s
+1.162190s
+avg: 1.170938s
+
+Dynamic tracepoint using dyninst (setSaveFPR=false):
+1.215105s
+1.228228s
+1.221297s
+1.213743s
+1.202920s
+1.206976s
+1.235110s
+1.242620s
+1.230708s
+1.216434s
+avg: 1.221314s
+
+Dynamic tracepoint using dyninst (setTrampRecursive=true, setSaveFPR=false):
+1.158693s
+1.172700s
+1.163864s
+1.165634s
+1.156490s
+1.163591s
+1.174408s
+1.161529s
+1.159647s
+1.161179s
+avg: 1.163773s

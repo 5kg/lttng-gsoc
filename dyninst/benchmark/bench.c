@@ -29,11 +29,10 @@
 #include <time.h>
 #define tic() do { struct timespec ts_start, ts_end; clock_gettime(CLOCK_MONOTONIC, &ts_start)
 #define toc() clock_gettime(CLOCK_MONOTONIC, &ts_end); \
-              printf("%lfs\n", (ts_end.tv_sec - ts_start.tv_sec) + (double)(ts_end.tv_nsec - ts_start.tv_nsec)/1e9); } \
+              printf("%lf\n", (ts_end.tv_sec - ts_start.tv_sec) + (double)(ts_end.tv_nsec - ts_start.tv_nsec)/1e9); } \
               while (0)
 
 #ifdef TRACING
-#define TRACEPOINT_DEFINE
 #include "ust_tests_benchmark.h"
 #endif
 

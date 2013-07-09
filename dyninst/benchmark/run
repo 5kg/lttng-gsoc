@@ -1,7 +1,42 @@
 #!/bin/sh
 
-lttng -q create; lttng -q enable-event -a -u; lttng -q start
-DYNINSTAPI_RT_LIB=/usr/lib/libdyninstAPI_RT.so ./mutator ./dyntp.so ./bench 1 1000000
-lttng -q stop
-sleep 1
-#lttng view
+: ${ITERS:=10}
+: ${NR_EVENTS:=100000}
+: ${NR_CPUS:=1}
+
+: ${PROG_NOTRACING:="./bench_notrace $NR_CPUS $NR_EVENTS"}
+: ${PROG_TRACING:="./bench_trace $NR_CPUS $NR_EVENTS"}
+: ${PROG_DYNINST:="DYNINSTAPI_RT_LIB=/usr/lib/libdyninstAPI_RT.so ./mutator ./dyntp.so ./bench_notrace $NR_CPUS $NR_EVENTS"}
+
+echo "No tracing:"
+t=0
+for i in $(seq $ITERS); do
+    tt=$(sh -c "$PROG_NOTRACING"); echo $tt"s"; t="$t+$tt"
+done
+echo "avg: $(echo "scale=6;($t)/$ITERS" | bc -l)s"
+echo
+
+function lttng_bench {
+    t=0
+    for i in $(seq $ITERS); do
+        lttng -q create; lttng -q enable-event -a -u; lttng -q start
+        tt=$(sh -c "$*"); echo $tt"s"; t="$t+$tt"
+        lttng -q stop; sleep 1; lttng -q destroy
+    done
+    echo "avg: $(echo "scale=6;($t)/$ITERS" | bc -l)s"; echo
+}
+
+echo "Static tracepoint:"
+lttng_bench $PROG_TRACING
+
+echo "Dynamic tracepoint using dyninst (default option):"
+lttng_bench $PROG_DYNINST
+
+echo "Dynamic tracepoint using dyninst (setTrampRecursive=true):"
+lttng_bench "SET_TRAMP_RECURSIVE=true $PROG_DYNINST"
+
+echo "Dynamic tracepoint using dyninst (setSaveFPR=false):"
+lttng_bench "SET_SAVE_FPR=false $PROG_DYNINST"
+
+echo "Dynamic tracepoint using dyninst (setTrampRecursive=true, setSaveFPR=false):"
+lttng_bench "SET_TRAMP_RECURSIVE=true SET_SAVE_FPR=false $PROG_DYNINST"
