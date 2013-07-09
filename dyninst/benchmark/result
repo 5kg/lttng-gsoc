@@ -1,4 +1,4 @@
-NR_EVENTS=100000, NR_CPUS=1
+-- NR_EVENTS=100000, NR_CPUS=1 --
 
     No tracing:
     1.010086s
@@ -78,7 +78,7 @@ NR_EVENTS=100000, NR_CPUS=1
     1.161179s
     avg: 1.163773s
 
-NR_EVENTS=1000000, NR_CPUS=1
+-- NR_EVENTS=1000000, NR_CPUS=1 --
 
     No tracing:
     9.965964s
@@ -157,3 +157,83 @@ NR_EVENTS=1000000, NR_CPUS=1
     11.789732s
     11.826488s
     avg: 11.698431s
+
+-- NR_EVENTS=100000, NR_CPUS=4 --
+
+    No tracing:
+    7.344660s
+    7.383031s
+    6.862222s
+    6.148737s
+    6.791419s
+    7.142695s
+    7.534507s
+    7.411512s
+    7.540924s
+    7.377899s
+    avg: 7.153760s
+
+    Static tracepoint:
+    8.183849s
+    7.575859s
+    7.703199s
+    8.397753s
+    7.925139s
+    7.845855s
+    8.310331s
+    8.202872s
+    8.071216s
+    8.097323s
+    avg: 8.031339s
+
+    Dynamic tracepoint using dyninst (default option):
+    8.057289s
+    6.593963s
+    8.076913s
+    7.948472s
+    7.803059s
+    7.216805s
+    7.934654s
+    7.747434s
+    7.742767s
+    7.860474s
+    avg: 7.698183s
+
+    Dynamic tracepoint using dyninst (setTrampRecursive=true):
+    7.886638s
+    7.315853s
+    6.833025s
+    7.731362s
+    8.027495s
+    7.255211s
+    7.673832s
+    7.374631s
+    8.240191s
+    7.814701s
+    avg: 7.615293s
+
+    Dynamic tracepoint using dyninst (setSaveFPR=false):
+    8.110986s
+    7.514702s
+    8.273640s
+    7.441009s
+    7.418032s
+    7.544345s
+    8.389439s
+    8.129405s
+    8.185830s
+    7.164865s
+    avg: 7.817225s
+
+    Dynamic tracepoint using dyninst (setTrampRecursive=true, setSaveFPR=false):
+    6.851607s
+    7.604890s
+    7.643987s
+    7.423772s
+    6.138741s
+    8.088863s
+    7.396961s
+    7.781671s
+    7.644649s
+    8.107151s
+    avg: 7.468229s

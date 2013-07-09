@@ -8,6 +8,8 @@
 : ${PROG_TRACING:="./bench_trace $NR_CPUS $NR_EVENTS"}
 : ${PROG_DYNINST:="DYNINSTAPI_RT_LIB=/usr/lib/libdyninstAPI_RT.so ./mutator ./dyntp.so ./bench_notrace $NR_CPUS $NR_EVENTS"}
 
+echo "-- NR_EVENTS=$NR_EVENTS, NR_CPUS=$NR_CPUS --"
+
 echo "No tracing:"
 t=0
 for i in $(seq $ITERS); do
