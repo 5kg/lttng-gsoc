@@ -13,6 +13,7 @@ echo "-- NR_EVENTS=$NR_EVENTS, NR_CPUS=$NR_CPUS --"
 echo "No tracing:"
 t=0
 for i in $(seq $ITERS); do
+    sync; echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
     tt=$(sh -c "$PROG_NOTRACING"); echo $tt"s"; t="$t+$tt"
 done
 echo "avg: $(echo "scale=6;($t)/$ITERS" | bc -l)s"
@@ -21,6 +22,7 @@ echo
 function lttng_bench {
     t=0
     for i in $(seq $ITERS); do
+        sync; echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null
         lttng -q create; lttng -q enable-event -a -u; lttng -q start
         tt=$(sh -c "$*"); echo $tt"s"; t="$t+$tt"
         lttng -q stop; sleep 1; lttng -q destroy
