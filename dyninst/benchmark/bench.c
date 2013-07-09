@@ -38,13 +38,12 @@
 
 static int nr_cpus;
 static unsigned long nr_events;
-int v;
 
 void do_stuff(void)
 {
 	FILE *file;
 
-	v = 1;
+	int v = 1;
 
 	file = fopen("/dev/null", "a");
 	fprintf(file, "%d", v);
