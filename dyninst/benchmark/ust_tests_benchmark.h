@@ -17,6 +17,11 @@ TRACEPOINT_EVENT(ust_tests_benchmark, tpbench,
 	)
 )
 
+TRACEPOINT_EVENT(ust_tests_benchmark, tpbench_no_arg,
+	TP_ARGS(),
+	TP_FIELDS()
+)
+
 #endif /* _TRACEPOINT_UST_TESTS_BENCHMARK_H */
 
 #undef TRACEPOINT_INCLUDE

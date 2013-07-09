@@ -1,0 +1,157 @@
+-- NR_EVENTS=100000, NR_CPUS=4 --
+No tracing:
+7.160325s
+7.329127s
+6.511679s
+7.238088s
+7.087271s
+7.337846s
+6.703695s
+6.594755s
+6.896817s
+7.283018s
+avg: 7.014262s
+
+Static tracepoint:
+7.099824s
+6.687466s
+6.898322s
+7.524359s
+6.641148s
+7.472326s
+6.591652s
+7.542017s
+7.263909s
+7.647189s
+avg: 7.136821s
+
+Dynamic tracepoint using dyninst (default option):
+7.970950s
+8.028743s
+8.031923s
+7.464739s
+7.124032s
+7.158874s
+7.654533s
+7.731719s
+7.942857s
+7.766616s
+avg: 7.687498s
+
+Dynamic tracepoint using dyninst (setTrampRecursive=true):
+7.820800s
+7.462850s
+7.319669s
+7.535567s
+7.198744s
+5.947424s
+6.496261s
+7.625782s
+7.784767s
+7.276399s
+avg: 7.246826s
+
+Dynamic tracepoint using dyninst (setSaveFPR=false):
+7.789456s
+7.228126s
+7.791372s
+7.249865s
+8.169538s
+7.491298s
+8.103224s
+7.301647s
+7.459085s
+7.797949s
+avg: 7.638156s
+
+Dynamic tracepoint using dyninst (setTrampRecursive=true, setSaveFPR=false):
+7.331953s
+7.357507s
+7.214649s
+7.630541s
+6.747873s
+7.697717s
+7.790306s
+7.788721s
+7.677661s
+7.697927s
+avg: 7.493485s
+
+-- NR_EVENTS=100000, NR_CPUS=1 --
+No tracing:
+0.994395s
+1.003755s
+1.002567s
+1.014637s
+1.006253s
+1.000115s
+0.997934s
+0.998720s
+1.000176s
+0.997882s
+avg: 1.001643s
+
+Static tracepoint:
+1.134481s
+1.134750s
+1.129030s
+1.134718s
+1.131790s
+1.128418s
+1.147111s
+1.149407s
+1.135383s
+1.135108s
+avg: 1.136019s
+
+Dynamic tracepoint using dyninst (default option):
+1.186275s
+1.184478s
+1.181349s
+1.189691s
+1.184425s
+1.186653s
+1.196854s
+1.184279s
+1.194250s
+1.184641s
+avg: 1.187289s
+
+Dynamic tracepoint using dyninst (setTrampRecursive=true):
+1.143853s
+1.143373s
+1.140531s
+1.160990s
+1.133467s
+1.136706s
+1.143507s
+1.141844s
+1.141279s
+1.138776s
+avg: 1.142432s
+
+Dynamic tracepoint using dyninst (setSaveFPR=false):
+1.183147s
+1.199214s
+1.190783s
+1.186985s
+1.185316s
+1.194739s
+1.190110s
+1.188302s
+1.186192s
+1.183868s
+avg: 1.188865s
+
+Dynamic tracepoint using dyninst (setTrampRecursive=true, setSaveFPR=false):
+1.149299s
+1.141847s
+1.145179s
+1.152335s
+1.155215s
+1.137495s
+1.144563s
+1.151401s
+1.139998s
+1.137559s
+avg: 1.145489s

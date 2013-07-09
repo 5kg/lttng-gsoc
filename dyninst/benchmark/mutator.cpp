@@ -25,15 +25,15 @@ int main (int argc, const char* argv[]) {
     std::vector<BPatch_function *> tracepoints, probes;
     image->findFunction("do_stuff", tracepoints);
     BPatch_function *tracepoint = tracepoints[0];
-    image->findFunction("tpbench", probes);
+    image->findFunction("tpbench_no_arg", probes);
     BPatch_function *probe = probes[0];
 
     //BPatch_variableExpr* v = tracepoint->findVariable("v")->at(0);
-    BPatch_variableExpr* v = image->findVariable("v");
+    //BPatch_variableExpr* v = image->findVariable("v");
 
     std::vector<BPatch_snippet*> args;
-    BPatch_snippet *var_expr = v;
-    args.push_back(var_expr);
+    //BPatch_snippet *var_expr = v;
+    //args.push_back(var_expr);
     BPatch_funcCallExpr call_probe(*probe, args);
     proc->insertSnippet(call_probe, (tracepoint->findPoint(BPatch_exit))[0]);
 

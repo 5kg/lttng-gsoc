@@ -52,7 +52,7 @@ void do_stuff(void)
 	time(NULL);
 
 #ifdef TRACING
-	tracepoint(ust_tests_benchmark, tpbench, v);
+	tracepoint(ust_tests_benchmark, tpbench_no_arg);
 #endif
 }
 
