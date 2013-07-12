@@ -66,18 +66,18 @@ End of assembler dump.
 
 ```
 Dump of assembler code for function do_stuff:
-   0x0000000000400d70 <+0>:     push   %rbx
-   0x0000000000400d71 <+1>:     mov    $0x401844,%esi
-   0x0000000000400d76 <+6>:     mov    $0x401846,%edi
-   0x0000000000400d7b <+11>:    callq  0x400ae0 <fopen@plt>
-   0x0000000000400d80 <+16>:    mov    $0x1,%edx
-   0x0000000000400d85 <+21>:    mov    $0x401850,%esi
-   0x0000000000400d8a <+26>:    mov    %rax,%rdi
-   0x0000000000400d8d <+29>:    mov    %rax,%rbx
-   0x0000000000400d90 <+32>:    xor    %eax,%eax
-   0x0000000000400d92 <+34>:    callq  0x400a60 <fprintf@plt>
-   0x0000000000400d97 <+39>:    mov    %rbx,%rdi
-   0x0000000000400d9a <+42>:    callq  0x400a10 <fclose@plt>
+   0x0000000000400d70 <+0>:     push   %rbx                       # same as above
+   0x0000000000400d71 <+1>:     mov    $0x401844,%esi             #      |
+   0x0000000000400d76 <+6>:     mov    $0x401846,%edi             #      |
+   0x0000000000400d7b <+11>:    callq  0x400ae0 <fopen@plt>       #      |
+   0x0000000000400d80 <+16>:    mov    $0x1,%edx                  #      |
+   0x0000000000400d85 <+21>:    mov    $0x401850,%esi             #      |
+   0x0000000000400d8a <+26>:    mov    %rax,%rdi                  #      |
+   0x0000000000400d8d <+29>:    mov    %rax,%rbx                  #      |
+   0x0000000000400d90 <+32>:    xor    %eax,%eax                  #      |
+   0x0000000000400d92 <+34>:    callq  0x400a60 <fprintf@plt>     #      |
+   0x0000000000400d97 <+39>:    mov    %rbx,%rdi                  #      |
+   0x0000000000400d9a <+42>:    callq  0x400a10 <fclose@plt>      #      |
    0x0000000000400d9f <+47>:    xor    %edi,%edi                  # same as above
    0x0000000000400da1 <+49>:    callq  0x400a90 <time@plt>        # call "time"
    0x0000000000400da6 <+54>:    mov    0x201abc(%rip),%eax        # state = __tracepoint_ust_tests_benchmark___tpbench_no_arg.state
@@ -107,6 +107,120 @@ end:
    0x0000000000400deb <+123>:   mov    0x201b2e(%rip),%rax
    0x0000000000400df2 <+130>:   jmpq   *%rax                      # call tp_rcu_read_unlock_bp()
 End of assembler dump.
+```
+
+ * Asm code with dynamic tracepoint using dyninst (default options)
+
+```
+Dump of assembler code for function do_stuff:
+   0x0000000000400a30 <+0>:     jmpq   0x10000                   # jmp to 0x10000
+   0x0000000000400a35 <+5>:     add    %bh,0x400b36(%rdi)        # looks like the following are all broken
+   0x0000000000400a3b <+11>:    callq  0x4007b0 <fopen@plt>
+   0x0000000000400a40 <+16>:    jmpq   0x10010
+   0x0000000000400a45 <+21>:    mov    %rax,%rbx
+   0x0000000000400a48 <+24>:    mov    %rax,%rdi
+   0x0000000000400a4b <+27>:    mov    $0x400b40,%esi
+   0x0000000000400a50 <+32>:    xor    %eax,%eax
+   0x0000000000400a52 <+34>:    callq  0x400760 <fprintf@plt>
+   0x0000000000400a57 <+39>:    jmpq   0x10027                   # What is this?
+   0x0000000000400a5c <+44>:    cld
+   0x0000000000400a5d <+45>:    (bad)
+   0x0000000000400a5e <+46>:    ljmpq  *<internal disassembler error>
+   0x0000000000400a60 <+48>:    lret
+   0x0000000000400a61 <+49>:    cmc
+   0x0000000000400a62 <+50>:    sar    $0xfd,%bh
+   0x0000000000400a65 <+53>:    (bad)
+   0x0000000000400a66 <+54>:    jmpq   *0xf(%rsi)
+End of assembler dump.
+
+(gdb) info proc map
+Mapped address spaces:
+          Start Addr           End Addr       Size     Offset objfile
+             0x10000           0x110000   0x100000        0x0 /dev/zero     # interesting
+
+(gdb) x/100i 0x10000
+   0x10000: push   %rbx                            # copied from do_stuff
+   0x10001: mov    $0x400b34,%esi
+   0x10006: mov    $0x400b36,%edi
+   0x1000b: callq  0x4007b0 <fopen@plt>
+   0x10010: mov    $0x1,%edx
+   0x10015: mov    %rax,%rbx
+   0x10018: mov    %rax,%rdi
+   0x1001b: mov    $0x400b40,%esi
+   0x10020: xor    %eax,%eax
+   0x10022: callq  0x400760 <fprintf@plt>
+   0x10027: mov    %rbx,%rdi
+   0x1002a: callq  0x400730 <fclose@plt>
+   0x1002f: pop    %rbx
+   0x10030: xor    %edi,%edi
+   0x10032: lea    -0xa8(%rsp),%rsp                # trampoline starts here
+   0x1003a: mov    %rax,0x20(%rsp)
+   0x1003f: lea    0xa8(%rsp),%rax
+   0x10047: and    $0xffffffffffffffe0,%rsp
+   0x1004b: mov    %rax,(%rsp)
+   0x1004f: mov    -0x88(%rax),%rax
+   0x10056: push   %rax                            # save registers
+   0x10057: push   %rbx
+   0x10058: push   %r8
+   0x1005a: push   %r9
+   0x1005c: push   %rcx
+   0x1005d: push   %rdx
+   0x1005e: push   %rsi
+   0x1005f: push   %rdi
+   0x10060: push   %rax
+   0x10061: push   %r12
+   0x10063: push   %r13
+   0x10065: push   %r14
+   0x10067: push   %r15
+   0x10069: lea    -0x18(%rsp),%rsp
+   0x1006e: movabs $0x0,%rax                       # I suspect this is related to the number of vector registers
+   0x10078: movabs $0x7f2ab42d73b0,%rbx            # %rbx = DYNINSTthreadIndex
+   0x10082: callq  *%rbx                           # call DYNINSTthreadIndex, calculate thread index
+   0x10084: lea    0x18(%rsp),%rsp
+   0x10089: mov    %rax,%rbx                       # %rbx = threadIdx
+   0x1008c: pop    %r15                            # restore registers
+   0x1008e: pop    %r14
+   0x10090: pop    %r13
+   0x10092: pop    %r12
+   0x10094: pop    %rax
+   0x10095: mov    %rbx,%r10                       # %r10 = threadIdx
+   0x10098: shl    $0x2,%r10                       # offset = threadIdx * sizeof(unsigned)
+   0x1009c: movabs $0x7f2ab44ec900,%rbx            # %rbx = DYNINST_default_tramp_guards, this array is for checking recursive call
+   0x100a6: mov    %r10,%r11                       # %r11 = offset
+   0x100a9: add    %rbx,%r11                       # %r11 += &DYNINST_default_tramp_guards[threadIdx]
+   0x100ac: mov    (%r11),%eax                     # if (DYNINST_default_tramp_guards[threadIdx] == 0)
+   0x100af: test   %rax,%rax                       #     // if found a recursive call
+   0x100b2: je     0x10106                         # goto end
+   0x100b8: movabs $0x0,%rax                       # %rax = 0
+   0x100c2: mov    %eax,(%r11)                     # DYNINST_default_tramp_guards[threadIdx] = 0
+   0x100c5: push   %r11                            # save registers
+   0x100c7: push   %r12
+   0x100c9: push   %r13
+   0x100cb: push   %r14
+   0x100cd: push   %r15
+   0x100cf: lea    -0x18(%rsp),%rsp
+   0x100d4: movabs $0x0,%rax                       # I suspect this is related to the number of vector registers
+   0x100de: movabs $0x7f2ab36fbac7,%rbx            # %rbx = tpbench_no_arg
+   0x100e8: callq  *%rbx                           # call tpbench_no_arg in dyntp.so
+   0x100ea: lea    0x18(%rsp),%rsp
+   0x100ef: pop    %r15                            # restore registers
+   0x100f1: pop    %r14
+   0x100f3: pop    %r13
+   0x100f5: pop    %r12
+   0x100f7: pop    %r11
+   0x100f9: movabs $0x1,%rax                      # %rax = 1
+   0x10103: mov    %eax,(%r11)                    # DYNINST_default_tramp_guards[threadIdx] = 1
+end:
+   0x10106: pop    %rdi                           # restore registers
+   0x10107: pop    %rsi
+   0x10108: pop    %rdx
+   0x10109: pop    %rcx
+   0x1010a: pop    %r9
+   0x1010c: pop    %r8
+   0x1010e: pop    %rbx
+   0x1010f: pop    %rax
+   0x10110: mov    (%rsp),%rsp
+   0x10114: jmpq   0x400790 <time@plt>
 ```
 
 ### Debug ###
