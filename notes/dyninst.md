@@ -21,7 +21,8 @@
 
 * Detailed Analysis
  * C code for do_stuff
-~~~~~~~~~
+
+```C
 void do_stuff(void)
 {
     FILE *file;
@@ -37,9 +38,11 @@ void do_stuff(void)
     tracepoint(ust_tests_benchmark, tpbench_no_arg);
 #endif
 }
-~~~~~~~~~
+```
+
  * Asm code without tracepoint, compiled with -O2
-~~~~~~~~~
+
+```
 Dump of assembler code for function do_stuff:
    0x0000000000400a30 <+0>:     push   %rbx                     # save "%rbx"
    0x0000000000400a31 <+1>:     mov    $0x400b34,%esi           # string "a"
@@ -57,9 +60,11 @@ Dump of assembler code for function do_stuff:
    0x0000000000400a60 <+48>:    xor    %edi,%edi                # constant "NULL"
    0x0000000000400a62 <+50>:    jmpq   0x400790 <time@plt>      # call "time"
 End of assembler dump.
-~~~~~~~~~
+```
+
  * Asm code with static tracepoint, compiled with -O2
-~~~~~~~~~
+
+```
 Dump of assembler code for function do_stuff:
    0x0000000000400d70 <+0>:     push   %rbx
    0x0000000000400d71 <+1>:     mov    $0x401844,%esi
@@ -102,7 +107,7 @@ end:
    0x0000000000400deb <+123>:   mov    0x201b2e(%rip),%rax
    0x0000000000400df2 <+130>:   jmpq   *%rax                      # call tp_rcu_read_unlock_bp()
 End of assembler dump.
-~~~~~~~~~
+```
 
 ### Debug ###
 ~~~~~~~~~
