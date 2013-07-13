@@ -2,17 +2,17 @@
 * Overhead
   * Save General Purpose Registers
   * Save Floating Point Registers
-    * To turn it off: BPatch::setSaveFPR(false).
-    * Might not safe to turn it off if we want to capture floating variables.
-    * Dyninst will attempt to analyse if saving floating point registers is required.
+      * To turn it off: BPatch::setSaveFPR(false).
+      * Might not safe to turn it off if we want to capture floating variables.
+      * Dyninst will attempt to analyse if saving floating point registers is required.
   * Generate A Stack Frame
-    * To turn it off: BPatch::setInstrStackFrames(false).
-    * Default is false.
+      * To turn it off: BPatch::setInstrStackFrames(false).
+      * Default is false.
   * Calculate Thread Index
-    * To turn it off: BPatch::setTrampRecursive(true).
-    * Safe if instrumentation cannot execute recursively.
+      * To turn it off: BPatch::setTrampRecursive(true).
+      * Safe if instrumentation cannot execute recursively.
   * Test and Set Trampoline Guard
-    * Same as above.
+      * Same as above.
   * Execute User Instrumentation
   * Unset Trampoline Guard
   * Clean Stack Frame
