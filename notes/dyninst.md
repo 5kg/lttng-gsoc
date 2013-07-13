@@ -199,7 +199,7 @@ Mapped address spaces:
    0x100cb: push   %r14
    0x100cd: push   %r15
    0x100cf: lea    -0x18(%rsp),%rsp                # align stack
-   0x100d4: movabs $0x0,%rax                       # I suspect this is related to the number of vector registers
+   0x100d4: movabs $0x0,%rax                       # number of vector registers
    0x100de: movabs $0x7f2ab36fbac7,%rbx            # %rbx = tpbench_no_arg
    0x100e8: callq  *%rbx                           # call tpbench_no_arg in dyntp.so
    0x100ea: lea    0x18(%rsp),%rsp                 # align stack
@@ -221,6 +221,88 @@ end:
    0x1010f: pop    %rax
    0x10110: mov    (%rsp),%rsp                    # restore original %rsp
    0x10114: jmpq   0x400790 <time@plt>
+```
+
+ * Asm code with dynamic tracepoint using dyninst (saveFPR=false)
+     * The generated code is identical to the above one.
+     * Dyninst will analyse if saving floating point registers is required.
+
+ * Asm code with dynamic tracepoint using dyninst (setTrampRecursive=true)
+
+```
+Dump of assembler code for function do_stuff:                        # no change
+   0x0000000000400a30 <+0>:     jmpq   0x10000
+   0x0000000000400a35 <+5>:     add    %bh,0x400b36(%rdi)
+   0x0000000000400a3b <+11>:    callq  0x4007b0 <fopen@plt>
+   0x0000000000400a40 <+16>:    jmpq   0x10010
+   0x0000000000400a45 <+21>:    mov    %rax,%rbx
+   0x0000000000400a48 <+24>:    mov    %rax,%rdi
+   0x0000000000400a4b <+27>:    mov    $0x400b40,%esi
+   0x0000000000400a50 <+32>:    xor    %eax,%eax
+   0x0000000000400a52 <+34>:    callq  0x400760 <fprintf@plt>
+   0x0000000000400a57 <+39>:    jmpq   0x10027
+   0x0000000000400a5c <+44>:    cld
+   0x0000000000400a5d <+45>:    (bad)
+   0x0000000000400a5e <+46>:    ljmpq  *<internal disassembler error>
+   0x0000000000400a60 <+48>:    lret
+   0x0000000000400a61 <+49>:    cmc
+   0x0000000000400a62 <+50>:    sar    $0xfd,%bh
+   0x0000000000400a65 <+53>:    (bad)
+   0x0000000000400a66 <+54>:    jmpq   *0xf(%rsi)
+End of assembler dump.
+
+(gdb) x/100i 0x10000
+   0x10000: push   %rbx                            # copied from do_stuff
+   0x10001: mov    $0x400b34,%esi
+   0x10006: mov    $0x400b36,%edi
+   0x1000b: callq  0x4007b0 <fopen@plt>
+   0x10010: mov    $0x1,%edx
+   0x10015: mov    %rax,%rbx
+   0x10018: mov    %rax,%rdi
+   0x1001b: mov    $0x400b40,%esi
+   0x10020: xor    %eax,%eax
+   0x10022: callq  0x400760 <fprintf@plt>
+   0x10027: mov    %rbx,%rdi
+   0x1002a: callq  0x400730 <fclose@plt>
+   0x1002f: pop    %rbx
+   0x10030: xor    %edi,%edi
+   0x10032: lea    -0xa8(%rsp),%rsp               # save %rsp, same as above
+   0x1003a: mov    %rax,0x20(%rsp)
+   0x1003f: lea    0xa8(%rsp),%rax
+   0x10047: and    $0xffffffffffffffe0,%rsp
+   0x1004b: mov    %rax,(%rsp)
+   0x1004f: mov    -0x88(%rax),%rax
+   0x10056: push   %rax                           # save registers
+   0x10057: push   %rbx
+   0x10058: push   %r8
+   0x1005a: push   %r9
+   0x1005c: push   %rcx
+   0x1005d: push   %rdx
+   0x1005e: push   %rsi
+   0x1005f: push   %rdi
+   0x10060: push   %r12
+   0x10062: push   %r13
+   0x10064: push   %r14
+   0x10066: push   %r15
+   0x10068: lea    -0x20(%rsp),%rsp               # align stack, looks like a bug of dyninst
+   0x1006d: movabs $0x0,%rax
+   0x10077: movabs $0x7f8d90ac8ac7,%rbx
+   0x10081: callq  *%rbx
+   0x10083: lea    0x20(%rsp),%rsp                # restore stack frame
+   0x10088: pop    %r15                           # restore registers
+   0x1008a: pop    %r14
+   0x1008c: pop    %r13
+   0x1008e: pop    %r12
+   0x10090: pop    %rdi
+   0x10091: pop    %rsi
+   0x10092: pop    %rdx
+   0x10093: pop    %rcx
+   0x10094: pop    %r9
+   0x10096: pop    %r8
+   0x10098: pop    %rbx
+   0x10099: pop    %rax
+   0x1009a: mov    (%rsp),%rsp                    # restore %rsp
+   0x1009e: jmpq   0x400790 <time@plt>
 ```
 
 ### Debug ###
