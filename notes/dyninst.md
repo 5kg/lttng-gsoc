@@ -153,12 +153,12 @@ Mapped address spaces:
    0x1002a: callq  0x400730 <fclose@plt>
    0x1002f: pop    %rbx
    0x10030: xor    %edi,%edi
-   0x10032: lea    -0xa8(%rsp),%rsp                # trampoline starts here
-   0x1003a: mov    %rax,0x20(%rsp)
-   0x1003f: lea    0xa8(%rsp),%rax
-   0x10047: and    $0xffffffffffffffe0,%rsp
-   0x1004b: mov    %rax,(%rsp)
-   0x1004f: mov    -0x88(%rax),%rax
+   0x10032: lea    -0xa8(%rsp),%rsp                # trampoline starts here, move %rsp to skip red zone: http://www.agner.org/optimize/calling_conventions.pdf
+   0x1003a: mov    %rax,0x20(%rsp)                 # save %rax
+   0x1003f: lea    0xa8(%rsp),%rax                 # %rax now stores original %rsp
+   0x10047: and    $0xffffffffffffffe0,%rsp        # align stack
+   0x1004b: mov    %rax,(%rsp)                     # save original %rsp
+   0x1004f: mov    -0x88(%rax),%rax                # restore %rax
    0x10056: push   %rax                            # save registers
    0x10057: push   %rbx
    0x10058: push   %r8
@@ -172,11 +172,11 @@ Mapped address spaces:
    0x10063: push   %r13
    0x10065: push   %r14
    0x10067: push   %r15
-   0x10069: lea    -0x18(%rsp),%rsp
+   0x10069: lea    -0x18(%rsp),%rsp                # align stack by 16 bytes: http://www.agner.org/optimize/calling_conventions.pdf
    0x1006e: movabs $0x0,%rax                       # I suspect this is related to the number of vector registers
    0x10078: movabs $0x7f2ab42d73b0,%rbx            # %rbx = DYNINSTthreadIndex
    0x10082: callq  *%rbx                           # call DYNINSTthreadIndex, calculate thread index
-   0x10084: lea    0x18(%rsp),%rsp
+   0x10084: lea    0x18(%rsp),%rsp                 # align stack
    0x10089: mov    %rax,%rbx                       # %rbx = threadIdx
    0x1008c: pop    %r15                            # restore registers
    0x1008e: pop    %r14
@@ -198,11 +198,11 @@ Mapped address spaces:
    0x100c9: push   %r13
    0x100cb: push   %r14
    0x100cd: push   %r15
-   0x100cf: lea    -0x18(%rsp),%rsp
+   0x100cf: lea    -0x18(%rsp),%rsp                # align stack
    0x100d4: movabs $0x0,%rax                       # I suspect this is related to the number of vector registers
    0x100de: movabs $0x7f2ab36fbac7,%rbx            # %rbx = tpbench_no_arg
    0x100e8: callq  *%rbx                           # call tpbench_no_arg in dyntp.so
-   0x100ea: lea    0x18(%rsp),%rsp
+   0x100ea: lea    0x18(%rsp),%rsp                 # align stack
    0x100ef: pop    %r15                            # restore registers
    0x100f1: pop    %r14
    0x100f3: pop    %r13
@@ -219,7 +219,7 @@ end:
    0x1010c: pop    %r8
    0x1010e: pop    %rbx
    0x1010f: pop    %rax
-   0x10110: mov    (%rsp),%rsp
+   0x10110: mov    (%rsp),%rsp                    # restore original %rsp
    0x10114: jmpq   0x400790 <time@plt>
 ```
 
