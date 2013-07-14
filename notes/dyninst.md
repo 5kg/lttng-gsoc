@@ -305,6 +305,392 @@ End of assembler dump.
    0x1009e: jmpq   0x400790 <time@plt>
 ```
 
+ * Asm code with dynamic tracepoint at &do_stuff+6 (defualt options)
+
+```
+Dump of assembler code for function do_stuff:
+   0x0000000000400a30 <+0>:     jmpq   0x10000                    # nothing changes
+   0x0000000000400a35 <+5>:     add    %bh,0x400b36(%rdi)
+   0x0000000000400a3b <+11>:    callq  0x4007b0 <fopen@plt>
+   0x0000000000400a40 <+16>:    jmpq   0x10113
+   0x0000000000400a45 <+21>:    mov    %rax,%rbx
+   0x0000000000400a48 <+24>:    mov    %rax,%rdi
+   0x0000000000400a4b <+27>:    mov    $0x400b40,%esi
+   0x0000000000400a50 <+32>:    xor    %eax,%eax
+   0x0000000000400a52 <+34>:    callq  0x400760 <fprintf@plt>
+   0x0000000000400a57 <+39>:    jmpq   0x1012a
+   0x0000000000400a5c <+44>:    cld
+   0x0000000000400a5d <+45>:    (bad)
+   0x0000000000400a5e <+46>:    ljmpq  *<internal disassembler error>
+   0x0000000000400a60 <+48>:    (bad)
+   0x0000000000400a61 <+49>:    test   $0xff,%al
+   0x0000000000400a64 <+52>:    std
+   0x0000000000400a65 <+53>:    (bad)
+   0x0000000000400a66 <+54>:    jmpq   *0xf(%rsi)
+End of assembler dump.
+
+(gdb) x/100i 0x10000
+   0x10000: push   %rbx
+   0x10001: mov    $0x400b34,%esi
+   0x10006: lea    -0xa8(%rsp),%rsp             # starts here, do_stuff+6
+   0x1000e: mov    %rax,0x20(%rsp)
+   0x10013: lea    0xa8(%rsp),%rax
+   0x1001b: and    $0xffffffffffffffe0,%rsp
+   0x1001f: mov    %rax,(%rsp)
+   0x10023: mov    -0x88(%rax),%rax
+   0x1002a: push   %rax
+   0x1002b: push   %r8
+   0x1002d: push   %r9
+   0x1002f: push   %rcx
+   0x10030: push   %rdx
+   0x10031: push   %rsi
+   0x10032: movabs $0x400a36,%rax
+   0x1003c: push   %rax
+   0x1003d: push   %rbp
+   0x1003e: mov    %rsp,%rbp
+   0x10041: lea    -0x200(%rsp),%rsp
+   0x10049: fxsave (%rsp)
+   0x1004d: push   %rax
+   0x1004e: push   %rsp
+   0x1004f: push   %r12
+   0x10051: push   %r13
+   0x10053: push   %r14
+   0x10055: push   %r15
+   0x10057: lea    -0x10(%rsp),%rsp
+   0x1005c: movabs $0x0,%rax
+   0x10066: movabs $0x7f2946bc73b0,%rbx
+   0x10070: callq  *%rbx
+   0x10072: lea    0x10(%rsp),%rsp
+   0x10077: mov    %rax,%rbx
+   0x1007a: pop    %r15
+   0x1007c: pop    %r14
+   0x1007e: pop    %r13
+   0x10080: pop    %r12
+   0x10082: pop    %rsp
+   0x10083: pop    %rax
+   0x10084: mov    %rbx,%r10
+   0x10087: shl    $0x2,%r10
+   0x1008b: movabs $0x7f2946ddc900,%rbx
+   0x10095: mov    %r10,%r11
+   0x10098: add    %rbx,%r11
+   0x1009b: mov    (%r11),%eax
+   0x1009e: test   %rax,%rax
+   0x100a1: je     0x100f7
+   0x100a7: movabs $0x0,%rax
+   0x100b1: mov    %eax,(%r11)
+   0x100b4: push   %rsp
+   0x100b5: push   %r11
+   0x100b7: push   %r12
+   0x100b9: push   %r13
+   0x100bb: push   %r14
+   0x100bd: push   %r15
+   0x100bf: lea    -0x10(%rsp),%rsp
+   0x100c4: movabs $0x0,%rax
+   0x100ce: movabs $0x7f2945febac7,%rbx
+   0x100d8: callq  *%rbx
+   0x100da: lea    0x10(%rsp),%rsp
+   0x100df: pop    %r15
+   0x100e1: pop    %r14
+   0x100e3: pop    %r13
+   0x100e5: pop    %r12
+   0x100e7: pop    %r11
+   0x100e9: pop    %rsp
+   0x100ea: movabs $0x1,%rax
+   0x100f4: mov    %eax,(%r11)
+   0x100f7: fxrstor (%rsp)
+   0x100fb: leaveq 
+   0x100fc: pop    %rax
+   0x100fd: pop    %rsi
+   0x100fe: pop    %rdx
+   0x100ff: pop    %rcx
+   0x10100: pop    %r9
+   0x10102: pop    %r8
+   0x10104: pop    %rax
+   0x10105: mov    (%rsp),%rsp
+   0x10109: mov    $0x400b36,%edi
+   0x1010e: callq  0x4007b0 <fopen@plt>
+   0x10113: mov    $0x1,%edx
+   0x10118: mov    %rax,%rbx
+   0x1011b: mov    %rax,%rdi
+   0x1011e: mov    $0x400b40,%esi
+   0x10123: xor    %eax,%eax
+   0x10125: callq  0x400760 <fprintf@plt>
+   0x1012a: mov    %rbx,%rdi
+   0x1012d: callq  0x400730 <fclose@plt>
+   0x10132: pop    %rbx
+   0x10133: xor    %edi,%edi
+   0x10135: jmpq   0x400790 <time@plt>
+```
+
+```
+(gdb) disas do_stuff 
+Dump of assembler code for function do_stuff:
+   0x0000000000400a30 <+0>:     jmpq   0x10000
+   0x0000000000400a35 <+5>:     add    %bh,0x400b36(%rdi)
+   0x0000000000400a3b <+11>:    callq  0x4007b0 <fopen@plt>
+   0x0000000000400a40 <+16>:    jmpq   0x100fc
+   0x0000000000400a45 <+21>:    mov    %rax,%rbx
+   0x0000000000400a48 <+24>:    mov    %rax,%rdi
+   0x0000000000400a4b <+27>:    mov    $0x400b40,%esi
+   0x0000000000400a50 <+32>:    xor    %eax,%eax
+   0x0000000000400a52 <+34>:    callq  0x400760 <fprintf@plt>
+   0x0000000000400a57 <+39>:    jmpq   0x10113
+   0x0000000000400a5c <+44>:    cld
+   0x0000000000400a5d <+45>:    (bad)
+   0x0000000000400a5e <+46>:    ljmpq  *<internal disassembler error>
+   0x0000000000400a60 <+48>:    mov    $0xf6,%bh
+   0x0000000000400a62 <+50>:    sar    $0xfd,%bh
+   0x0000000000400a65 <+53>:    (bad)
+   0x0000000000400a66 <+54>:    jmpq   *0xf(%rsi)
+End of assembler dump.
+
+(gdb) x/100i 0x10000
+   0x10000: push   %rbx
+   0x10001: mov    $0x400b34,%esi
+   0x10006: lea    -0xa8(%rsp),%rsp
+   0x1000e: mov    %rax,0x20(%rsp)
+   0x10013: lea    0xa8(%rsp),%rax
+   0x1001b: and    $0xffffffffffffffe0,%rsp
+   0x1001f: mov    %rax,(%rsp)
+   0x10023: mov    -0x88(%rax),%rax
+   0x1002a: push   %rax
+   0x1002b: push   %r8
+   0x1002d: push   %r9
+   0x1002f: push   %rcx
+   0x10030: push   %rdx
+   0x10031: push   %rsi
+   0x10032: lea    -0x10(%rsp),%rsp
+   0x10037: push   %rax
+   0x10038: push   %rsp
+   0x10039: push   %r12
+   0x1003b: push   %r13
+   0x1003d: push   %r14
+   0x1003f: push   %r15
+   0x10041: lea    -0x10(%rsp),%rsp
+   0x10046: movabs $0x0,%rax
+   0x10050: movabs $0x7f9de59a73b0,%rbx
+   0x1005a: callq  *%rbx
+   0x1005c: lea    0x10(%rsp),%rsp
+   0x10061: mov    %rax,%rbx
+   0x10064: pop    %r15
+   0x10066: pop    %r14
+   0x10068: pop    %r13
+   0x1006a: pop    %r12
+   0x1006c: pop    %rsp
+   0x1006d: pop    %rax
+   0x1006e: mov    %rbx,%r10
+   0x10071: shl    $0x2,%r10
+   0x10075: movabs $0x7f9de5bbc900,%rbx
+   0x1007f: mov    %r10,%r11
+   0x10082: add    %rbx,%r11
+   0x10085: mov    (%r11),%eax
+   0x10088: test   %rax,%rax
+   0x1008b: je     0x100e1
+   0x10091: movabs $0x0,%rax
+   0x1009b: mov    %eax,(%r11)
+   0x1009e: push   %rsp
+   0x1009f: push   %r11
+   0x100a1: push   %r12
+   0x100a3: push   %r13
+   0x100a5: push   %r14
+   0x100a7: push   %r15
+   0x100a9: lea    -0x10(%rsp),%rsp
+   0x100ae: movabs $0x0,%rax
+   0x100b8: movabs $0x7f9de4dcbac7,%rbx
+   0x100c2: callq  *%rbx
+   0x100c4: lea    0x10(%rsp),%rsp
+   0x100c9: pop    %r15
+   0x100cb: pop    %r14
+   0x100cd: pop    %r13
+   0x100cf: pop    %r12
+   0x100d1: pop    %r11
+   0x100d3: pop    %rsp
+   0x100d4: movabs $0x1,%rax
+   0x100de: mov    %eax,(%r11)
+   0x100e1: lea    0x10(%rsp),%rsp
+   0x100e6: pop    %rsi
+   0x100e7: pop    %rdx
+   0x100e8: pop    %rcx
+   0x100e9: pop    %r9
+   0x100eb: pop    %r8
+   0x100ed: pop    %rax
+   0x100ee: mov    (%rsp),%rsp
+   0x100f2: mov    $0x400b36,%edi
+   0x100f7: callq  0x4007b0 <fopen@plt>
+   0x100fc: mov    $0x1,%edx
+   0x10101: mov    %rax,%rbx
+   0x10104: mov    %rax,%rdi
+   0x10107: mov    $0x400b40,%esi
+   0x1010c: xor    %eax,%eax
+   0x1010e: callq  0x400760 <fprintf@plt>
+   0x10113: mov    %rbx,%rdi
+   0x10116: callq  0x400730 <fclose@plt>
+   0x1011b: pop    %rbx
+   0x1011c: xor    %edi,%edi
+   0x1011e: jmpq   0x400790 <time@plt>
+```
+
+```
+(gdb) disas do_stuff
+Dump of assembler code for function do_stuff:
+   0x0000000000400a30 <+0>:     jmpq   0x10000
+   0x0000000000400a35 <+5>:     add    %bh,0x400b36(%rdi)
+   0x0000000000400a3b <+11>:    callq  0x4007b0 <fopen@plt>
+   0x0000000000400a40 <+16>:    jmpq   0x1009b
+   0x0000000000400a45 <+21>:    mov    %rax,%rbx
+   0x0000000000400a48 <+24>:    mov    %rax,%rdi
+   0x0000000000400a4b <+27>:    mov    $0x400b40,%esi
+   0x0000000000400a50 <+32>:    xor    %eax,%eax
+   0x0000000000400a52 <+34>:    callq  0x400760 <fprintf@plt>
+   0x0000000000400a57 <+39>:    jmpq   0x100b2
+   0x0000000000400a5c <+44>:    cld
+   0x0000000000400a5d <+45>:    (bad)
+   0x0000000000400a5e <+46>:    ljmpq  *<internal disassembler error>
+   0x0000000000400a60 <+48>:    push   %rsi
+   0x0000000000400a61 <+49>:    test   $0xff,%al
+   0x0000000000400a64 <+52>:    std
+   0x0000000000400a65 <+53>:    (bad)
+   0x0000000000400a66 <+54>:    jmpq   *0xf(%rsi)
+End of assembler dump.
+
+(gdb) x/100i 0x10000
+   0x10000: push   %rbx
+   0x10001: mov    $0x400b34,%esi
+   0x10006: lea    -0xa8(%rsp),%rsp
+   0x1000e: mov    %rax,0x20(%rsp)
+   0x10013: lea    0xa8(%rsp),%rax
+   0x1001b: and    $0xffffffffffffffe0,%rsp
+   0x1001f: mov    %rax,(%rsp)
+   0x10023: mov    -0x88(%rax),%rax
+   0x1002a: push   %rax
+   0x1002b: push   %r8
+   0x1002d: push   %r9
+   0x1002f: push   %rcx
+   0x10030: push   %rdx
+   0x10031: push   %rsi
+   0x10032: movabs $0x400a36,%rax
+   0x1003c: push   %rax
+   0x1003d: push   %rbp
+   0x1003e: mov    %rsp,%rbp
+   0x10041: lea    -0x200(%rsp),%rsp
+   0x10049: fxsave (%rsp)
+   0x1004d: push   %rsp
+   0x1004e: push   %r12
+   0x10050: push   %r13
+   0x10052: push   %r14
+   0x10054: push   %r15
+   0x10056: lea    -0x18(%rsp),%rsp
+   0x1005b: movabs $0x0,%rax
+   0x10065: movabs $0x7fb31fdccac7,%rbx
+   0x1006f: callq  *%rbx
+   0x10071: lea    0x18(%rsp),%rsp
+   0x10076: pop    %r15
+   0x10078: pop    %r14
+   0x1007a: pop    %r13
+   0x1007c: pop    %r12
+   0x1007e: pop    %rsp
+   0x1007f: fxrstor (%rsp)
+   0x10083: leaveq 
+   0x10084: pop    %rax
+   0x10085: pop    %rsi
+   0x10086: pop    %rdx
+   0x10087: pop    %rcx
+   0x10088: pop    %r9
+   0x1008a: pop    %r8
+   0x1008c: pop    %rax
+   0x1008d: mov    (%rsp),%rsp
+   0x10091: mov    $0x400b36,%edi
+   0x10096: callq  0x4007b0 <fopen@plt>
+   0x1009b: mov    $0x1,%edx
+   0x100a0: mov    %rax,%rbx
+   0x100a3: mov    %rax,%rdi
+   0x100a6: mov    $0x400b40,%esi
+   0x100ab: xor    %eax,%eax
+   0x100ad: callq  0x400760 <fprintf@plt>
+   0x100b2: mov    %rbx,%rdi
+   0x100b5: callq  0x400730 <fclose@plt>
+   0x100ba: pop    %rbx
+   0x100bb: xor    %edi,%edi
+   0x100bd: jmpq   0x400790 <time@plt>
+```
+
+```
+(gdb) disas do_stuff 
+Dump of assembler code for function do_stuff:
+   0x0000000000400a30 <+0>:     jmpq   0x10000
+   0x0000000000400a35 <+5>:     add    %bh,0x400b36(%rdi)
+   0x0000000000400a3b <+11>:    callq  0x4007b0 <fopen@plt>
+   0x0000000000400a40 <+16>:    jmpq   0x10084
+   0x0000000000400a45 <+21>:    mov    %rax,%rbx
+   0x0000000000400a48 <+24>:    mov    %rax,%rdi
+   0x0000000000400a4b <+27>:    mov    $0x400b40,%esi
+   0x0000000000400a50 <+32>:    xor    %eax,%eax
+   0x0000000000400a52 <+34>:    callq  0x400760 <fprintf@plt>
+   0x0000000000400a57 <+39>:    jmpq   0x1009b
+   0x0000000000400a5c <+44>:    cld
+   0x0000000000400a5d <+45>:    (bad)
+   0x0000000000400a5e <+46>:    ljmpq  *<internal disassembler error>
+   0x0000000000400a60 <+48>:    (bad)
+   0x0000000000400a61 <+49>:    test   $0xff,%al
+   0x0000000000400a64 <+52>:    std
+   0x0000000000400a65 <+53>:    (bad)
+   0x0000000000400a66 <+54>:    jmpq   *0xf(%rsi)
+End of assembler dump.
+
+(gdb) x/100i 0x10000
+   0x10000: push   %rbx
+   0x10001: mov    $0x400b34,%esi
+   0x10006: lea    -0xa8(%rsp),%rsp
+   0x1000e: mov    %rax,0x20(%rsp)
+   0x10013: lea    0xa8(%rsp),%rax
+   0x1001b: and    $0xffffffffffffffe0,%rsp
+   0x1001f: mov    %rax,(%rsp)
+   0x10023: mov    -0x88(%rax),%rax
+   0x1002a: push   %rax
+   0x1002b: push   %r8
+   0x1002d: push   %r9
+   0x1002f: push   %rcx
+   0x10030: push   %rdx
+   0x10031: push   %rsi
+   0x10032: lea    -0x10(%rsp),%rsp
+   0x10037: push   %rsp
+   0x10038: push   %r12
+   0x1003a: push   %r13
+   0x1003c: push   %r14
+   0x1003e: push   %r15
+   0x10040: lea    -0x18(%rsp),%rsp
+   0x10045: movabs $0x0,%rax
+   0x1004f: movabs $0x7f682f61eac7,%rbx
+   0x10059: callq  *%rbx
+   0x1005b: lea    0x18(%rsp),%rsp
+   0x10060: pop    %r15
+   0x10062: pop    %r14
+   0x10064: pop    %r13
+   0x10066: pop    %r12
+   0x10068: pop    %rsp
+   0x10069: lea    0x10(%rsp),%rsp
+   0x1006e: pop    %rsi
+   0x1006f: pop    %rdx
+   0x10070: pop    %rcx
+   0x10071: pop    %r9
+   0x10073: pop    %r8
+   0x10075: pop    %rax
+   0x10076: mov    (%rsp),%rsp
+   0x1007a: mov    $0x400b36,%edi
+   0x1007f: callq  0x4007b0 <fopen@plt>
+   0x10084: mov    $0x1,%edx
+   0x10089: mov    %rax,%rbx
+   0x1008c: mov    %rax,%rdi
+   0x1008f: mov    $0x400b40,%esi
+   0x10094: xor    %eax,%eax
+   0x10096: callq  0x400760 <fprintf@plt>
+   0x1009b: mov    %rbx,%rdi
+   0x1009e: callq  0x400730 <fclose@plt>
+   0x100a3: pop    %rbx
+   0x100a4: xor    %edi,%edi
+   0x100a6: jmpq   0x400790 <time@plt>
+```
+
 ### Debug ###
 ~~~~~~~~~
 DYNINST_DEBUG_MALWARE: Enabling DyninstAPI malware debug
