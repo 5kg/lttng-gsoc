@@ -1,4 +1,4 @@
-all: dyntp.so mutator bench_notrace bench_trace
+all: dyntp.so mutator mutator_offset bench_notrace bench_trace
 
 dyntp.so: dyntp.o
 	gcc -shared  -fPIC -DPIC $^ -ldl -llttng-ust -o $@
@@ -15,6 +15,12 @@ mutator: mutator.o
 mutator.o: mutator.cpp
 	g++ -g $< -c -o $@
 
+mutator_offset: mutator_offset.o
+	g++ -g $^ -L/usr/lib/dyninst -Wl,-rpath=/usr/lib/dyninst -ldyninstAPI -o $@
+
+mutator_offset.o: mutator_offset.cpp
+	g++ -g $< -c -o $@
+
 bench_notrace: bench_notrace.o
 	gcc $^ -std=gnu99 -g -O2 -lrt -lpthread -o $@
 
@@ -29,4 +35,4 @@ bench_trace.o: bench.c
 
 .PHONY: clean
 clean:
-	rm -f *.o *.so mutator bench_notrace bench_trace
+	rm -f *.o *.so mutator mutator_offset bench_notrace bench_trace
