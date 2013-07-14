@@ -422,6 +422,8 @@ End of assembler dump.
    0x10135: jmpq   0x400790 <time@plt>
 ```
 
+ * Asm code with dynamic tracepoint at &do_stuff+6 (setSaveFPR=false)
+
 ```
 (gdb) disas do_stuff 
 Dump of assembler code for function do_stuff:
@@ -530,6 +532,8 @@ End of assembler dump.
    0x1011e: jmpq   0x400790 <time@plt>
 ```
 
+ * Asm code with dynamic tracepoint at &do_stuff+6 (setTrampRecursive=true)
+
 ```
 (gdb) disas do_stuff
 Dump of assembler code for function do_stuff:
@@ -613,6 +617,8 @@ End of assembler dump.
    0x100bb: xor    %edi,%edi
    0x100bd: jmpq   0x400790 <time@plt>
 ```
+
+ * Asm code with dynamic tracepoint at &do_stuff+6 (setTrampRecursive=true, setSaveFPR=false)
 
 ```
 (gdb) disas do_stuff 
