@@ -344,12 +344,12 @@ End of assembler dump.
    0x1002f: push   %rcx
    0x10030: push   %rdx
    0x10031: push   %rsi
-   0x10032: movabs $0x400a36,%rax
+   0x10032: movabs $0x400a36,%rax              # WTF?
    0x1003c: push   %rax
    0x1003d: push   %rbp
    0x1003e: mov    %rsp,%rbp
-   0x10041: lea    -0x200(%rsp),%rsp
-   0x10049: fxsave (%rsp)
+   0x10041: lea    -0x200(%rsp),%rsp           # stack space for FPRs
+   0x10049: fxsave (%rsp)                      # save FPRs
    0x1004d: push   %rax
    0x1004e: push   %rsp
    0x1004f: push   %r12
@@ -425,7 +425,7 @@ End of assembler dump.
 ```
 (gdb) disas do_stuff 
 Dump of assembler code for function do_stuff:
-   0x0000000000400a30 <+0>:     jmpq   0x10000
+   0x0000000000400a30 <+0>:     jmpq   0x10000                   # noting changes
    0x0000000000400a35 <+5>:     add    %bh,0x400b36(%rdi)
    0x0000000000400a3b <+11>:    callq  0x4007b0 <fopen@plt>
    0x0000000000400a40 <+16>:    jmpq   0x100fc
@@ -617,7 +617,7 @@ End of assembler dump.
 ```
 (gdb) disas do_stuff 
 Dump of assembler code for function do_stuff:
-   0x0000000000400a30 <+0>:     jmpq   0x10000
+   0x0000000000400a30 <+0>:     jmpq   0x10000                   # nothing changes
    0x0000000000400a35 <+5>:     add    %bh,0x400b36(%rdi)
    0x0000000000400a3b <+11>:    callq  0x4007b0 <fopen@plt>
    0x0000000000400a40 <+16>:    jmpq   0x10084
@@ -640,7 +640,7 @@ End of assembler dump.
 (gdb) x/100i 0x10000
    0x10000: push   %rbx
    0x10001: mov    $0x400b34,%esi
-   0x10006: lea    -0xa8(%rsp),%rsp
+   0x10006: lea    -0xa8(%rsp),%rsp              # starts here
    0x1000e: mov    %rax,0x20(%rsp)
    0x10013: lea    0xa8(%rsp),%rax
    0x1001b: and    $0xffffffffffffffe0,%rsp
@@ -652,15 +652,15 @@ End of assembler dump.
    0x1002f: push   %rcx
    0x10030: push   %rdx
    0x10031: push   %rsi
-   0x10032: lea    -0x10(%rsp),%rsp
+   0x10032: lea    -0x10(%rsp),%rsp             # align stack
    0x10037: push   %rsp
    0x10038: push   %r12
    0x1003a: push   %r13
    0x1003c: push   %r14
    0x1003e: push   %r15
-   0x10040: lea    -0x18(%rsp),%rsp
+   0x10040: lea    -0x18(%rsp),%rsp             # align stack
    0x10045: movabs $0x0,%rax
-   0x1004f: movabs $0x7f682f61eac7,%rbx
+   0x1004f: movabs $0x7f682f61eac7,%rbx         # call tp_no_arg
    0x10059: callq  *%rbx
    0x1005b: lea    0x18(%rsp),%rsp
    0x10060: pop    %r15
@@ -675,7 +675,7 @@ End of assembler dump.
    0x10071: pop    %r9
    0x10073: pop    %r8
    0x10075: pop    %rax
-   0x10076: mov    (%rsp),%rsp
+   0x10076: mov    (%rsp),%rsp                # we are done
    0x1007a: mov    $0x400b36,%edi
    0x1007f: callq  0x4007b0 <fopen@plt>
    0x10084: mov    $0x1,%edx
