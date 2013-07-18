@@ -1,0 +1,7 @@
+Compile:
+
+    make
+
+Run:
+
+    LD_PRELOAD=./libkaji.so ./demo
