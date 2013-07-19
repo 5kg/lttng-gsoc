@@ -11,7 +11,7 @@ void __attribute__ ((destructor)) kaji_fini(void)
 }
 
 
-void kaji_loop(void *arg)
+void* kaji_loop(void *arg)
 {
     int sock_fd, ret, efd;
     struct sockaddr_un addr;
@@ -80,16 +80,20 @@ void kaji_loop(void *arg)
                     }
                     buffer[count] = '\0';
                     if (count > 0) {
-                        printf("%s", buffer);
+                        void *addr = (void*) strtoul(buffer, NULL, 0);
+                        kaji_inject(addr);
                     }
                 }
             }
         }
     }
 
+    // TODO: Mem-leak here
     free(events);
     close(efd);
     close(sock_fd);
+
+    return NULL;
 }
 
 void set_nonblocking(int fd)
@@ -109,6 +113,30 @@ void kaji_assert(int pred, const char *s) {
         perror(s);
         exit(errno);
     }
+}
+
+void kaji_inject(void* addr)
+{
+    int ret, stat, count;
+    pid_t ppid = getppid();
+
+    ret = ptrace(PTRACE_ATTACH, ppid, NULL, NULL);
+    kaji_assert(ret != -1, "PTRACE_ATTACH");
+    ret = waitpid(ppid, &stat, WUNTRACED);
+    kaji_assert((ret == ppid) && WIFSTOPPED(stat), "waitpid");
+
+    for (count = 0; count < 4; count += sizeof(long)) {
+        errno = 0;
+        long word = ptrace(PTRACE_PEEKTEXT, ppid, addr + count, NULL);
+        kaji_assert(!errno, "PTRACE_PEEKTEXT");
+        printf("%lx ", word);
+    }
+    putchar('\n');
+
+    //ret = ptrace(PTRACE_CONT, ppid, NULL, NULL);
+    //kaji_assert(ret != -1, "PTRACE_CONT");
+    ret = ptrace(PTRACE_DETACH, ppid, NULL, 0);
+    kaji_assert(ret != -1, "PTRACE_DETACH");
 }
 
 void kaji_probe()
