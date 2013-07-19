@@ -1,10 +1,10 @@
 all: libkaji.so demo
 
 libkaji.so: kaji.o
-	gcc -lpthread -shared $^ -o $@
+	gcc -ldl -lpthread -llttng-ust -shared $^ -o $@
 
-kaji.o: kaji.c kaji.h
-	gcc -fPIC -c $< -o $@
+kaji.o: kaji.c kaji.h ust_kaji_test.h
+	gcc -fPIC -I. -c $< -o $@
 
 .PHONY: clean
 clean:

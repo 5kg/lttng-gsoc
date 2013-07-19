@@ -1,0 +1,5 @@
+#!/bin/sh
+
+lttng -q create; lttng -q enable-event -a -u; lttng -q start
+LD_PRELOAD=./libkaji.so ./demo
+lttng -q stop; sleep 1; lttng view; lttng -q destroy

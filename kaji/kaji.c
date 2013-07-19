@@ -71,6 +71,7 @@ void kaji_loop(void *arg)
                         kaji_assert(errno == EAGAIN, "read");
                         if (errno != EAGAIN) {
                             perror("read");
+                            close(events[i].data.fd);
                             exit(errno);
                         }
                         break;
@@ -82,7 +83,6 @@ void kaji_loop(void *arg)
                         printf("%s", buffer);
                     }
                 }
-                //close(events[i].data.fd);
             }
         }
     }
@@ -109,4 +109,9 @@ void kaji_assert(int pred, const char *s) {
         perror(s);
         exit(errno);
     }
+}
+
+void kaji_probe()
+{
+    tracepoint(ust_kaji_test, tptest);
 }
