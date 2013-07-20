@@ -20,7 +20,7 @@ void* kaji_loop(void *arg)
     struct epoll_event *events;
 
     sock_fd = socket(PF_UNIX, SOCK_STREAM, 0);
-    kaji_assert(socket >= 0, "socket");
+    _assert(socket >= 0, "socket");
 
     set_nonblocking(sock_fd);
 
@@ -31,19 +31,19 @@ void* kaji_loop(void *arg)
     (void) unlink(pathname);
 
     ret = bind(sock_fd, (struct sockaddr *) &addr, sizeof(struct sockaddr_un));
-    kaji_assert(ret == 0, "bind");
+    _assert(ret == 0, "bind");
 
     ret = listen(sock_fd, MAX_LISTEN);
-    kaji_assert(ret == 0, "listen");
+    _assert(ret == 0, "listen");
 
     efd = epoll_create1(0);
-    kaji_assert(efd != -1, "epoll_create1");
+    _assert(efd != -1, "epoll_create1");
 
     memset(&ev, 0, sizeof(ev));
     ev.data.fd = sock_fd;
     ev.events = EPOLLIN;
     ret = epoll_ctl(efd, EPOLL_CTL_ADD, sock_fd, &ev);
-    kaji_assert(efd != -1, "epoll_ctl");
+    _assert(efd != -1, "epoll_ctl");
 
     events = calloc(MAX_EVENTS, sizeof(struct epoll_event));
     for(;;) {
@@ -60,7 +60,7 @@ void* kaji_loop(void *arg)
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = conn_fd;
                 ret = epoll_ctl(efd, EPOLL_CTL_ADD, conn_fd, &ev);
-                kaji_assert(efd != -1, "epoll_ctl");
+                _assert(efd != -1, "epoll_ctl");
             } else {
                 ssize_t count;
                 char buffer[4096];
@@ -68,7 +68,7 @@ void* kaji_loop(void *arg)
                 for (;;) {
                     count = read(events[i].data.fd, buffer, sizeof(buffer));
                     if (count == -1) {
-                        kaji_assert(errno == EAGAIN, "read");
+                        _assert(errno == EAGAIN, "read");
                         if (errno != EAGAIN) {
                             perror("read");
                             close(events[i].data.fd);
@@ -101,14 +101,14 @@ void set_nonblocking(int fd)
     int flags, ret;
 
     flags = fcntl(fd, F_GETFL);
-    kaji_assert(flags >= 0, "fcntl");
+    _assert(flags >= 0, "fcntl");
 
     flags |= O_NONBLOCK;
     ret = fcntl(fd, F_SETFL, flags);
-    kaji_assert(ret != -1, "fcntl");
+    _assert(ret != -1, "fcntl");
 }
 
-void kaji_assert(int pred, const char *s) {
+void _assert(int pred, const char *s) {
     if (!pred) {
         perror(s);
         exit(errno);
@@ -117,26 +117,52 @@ void kaji_assert(int pred, const char *s) {
 
 void kaji_inject(void* addr)
 {
-    int ret, stat, count;
+    int ret, stat, count, insn_len;
     pid_t ppid = getppid();
+    char* orig_insn[MAX_INSN_LENGTH+1];
 
     ret = ptrace(PTRACE_ATTACH, ppid, NULL, NULL);
-    kaji_assert(ret != -1, "PTRACE_ATTACH");
+    _assert(ret != -1, "PTRACE_ATTACH");
     ret = waitpid(ppid, &stat, WUNTRACED);
-    kaji_assert((ret == ppid) && WIFSTOPPED(stat), "waitpid");
+    _assert((ret == ppid) && WIFSTOPPED(stat), "waitpid");
 
-    for (count = 0; count < 4; count += sizeof(long)) {
+    insn_len = kaji_get_insn_len(addr);
+
+    for (count = 0; count < insn_len; count += sizeof(long)) {
+        long word;
+
         errno = 0;
-        long word = ptrace(PTRACE_PEEKTEXT, ppid, addr + count, NULL);
-        kaji_assert(!errno, "PTRACE_PEEKTEXT");
-        printf("%lx ", word);
+        word = ptrace(PTRACE_PEEKTEXT, ppid, addr + count, NULL);
+        _assert(!errno, "PTRACE_PEEKTEXT");
+        memcpy(orig_insn + count, &word, sizeof(long));
     }
-    putchar('\n');
 
-    //ret = ptrace(PTRACE_CONT, ppid, NULL, NULL);
-    //kaji_assert(ret != -1, "PTRACE_CONT");
+    orig_insn[insn_len] = '\0';
+
+    kaji_install_trampoline(addr, (const char*) orig_insn);
+
     ret = ptrace(PTRACE_DETACH, ppid, NULL, 0);
-    kaji_assert(ret != -1, "PTRACE_DETACH");
+    _assert(ret != -1, "PTRACE_DETACH");
+}
+
+void kaji_install_trampoline(void* addr, const char* orig_insn)
+{
+    //size_t insn_len = strnlen(orig_insn, MAX_INSN_LENGTH);
+
+    /*for (count = 0; count < insn_len; count += sizeof(long)) {
+        long word;
+
+        errno = 0;
+        word = ptrace(PTRACE_PEEKTEXT, ppid, addr + count, NULL);
+        _assert(!errno, "PTRACE_PEEKTEXT");
+        memcpy(orig_insn + count, &word, sizeof(long));
+    }*/
+}
+
+int kaji_get_insn_len(void* addr)
+{
+    //TODO
+    return 4;
 }
 
 void kaji_probe()
