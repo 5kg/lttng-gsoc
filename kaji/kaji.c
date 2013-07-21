@@ -117,49 +117,74 @@ void _assert(int pred, const char *s) {
 
 void kaji_inject(void* addr)
 {
-    int ret, stat, count, insn_len;
+    int ret, stat;
     pid_t ppid = getppid();
-    char* orig_insn[MAX_INSN_LENGTH+1];
 
     ret = ptrace(PTRACE_ATTACH, ppid, NULL, NULL);
     _assert(ret != -1, "PTRACE_ATTACH");
     ret = waitpid(ppid, &stat, WUNTRACED);
     _assert((ret == ppid) && WIFSTOPPED(stat), "waitpid");
 
-    insn_len = kaji_get_insn_len(addr);
-
-    for (count = 0; count < insn_len; count += sizeof(long)) {
-        long word;
-
-        errno = 0;
-        word = ptrace(PTRACE_PEEKTEXT, ppid, addr + count, NULL);
-        _assert(!errno, "PTRACE_PEEKTEXT");
-        memcpy(orig_insn + count, &word, sizeof(long));
-    }
-
-    orig_insn[insn_len] = '\0';
-
-    kaji_install_trampoline(addr, (const char*) orig_insn);
+    kaji_install_trampoline(ppid, addr);
 
     ret = ptrace(PTRACE_DETACH, ppid, NULL, 0);
     _assert(ret != -1, "PTRACE_DETACH");
 }
 
-void kaji_install_trampoline(void* addr, const char* orig_insn)
+void kaji_install_trampoline(pid_t pid, void* addr)
 {
-    //size_t insn_len = strnlen(orig_insn, MAX_INSN_LENGTH);
+    size_t orig_insn_len = kaji_get_insn_len(pid, addr);
+    unsigned char orig_insn_buff[MAX_INSN_LENGTH];
+    int64_t jmp_offset;
+    unsigned char jmp_buff[] = { 0xe9, 0, 0, 0 , 0 };
 
-    /*for (count = 0; count < insn_len; count += sizeof(long)) {
+    kaji_read_insn(pid, addr, orig_insn_len, orig_insn_buff);
+    kaji_write_insn(pid, __kaji_trampoline_placeholder,
+            orig_insn_len, orig_insn_buff);
+
+    jmp_offset = addr - (__kaji_trampoline_placeholder + orig_insn_len);
+    memcpy(jmp_buff + 1, &jmp_offset, sizeof(jmp_offset));
+    kaji_write_insn(pid, __kaji_trampoline_placeholder + orig_insn_len,
+            sizeof(jmp_buff), jmp_buff);
+
+    jmp_offset = kaji_trampoline - addr;
+    memcpy(jmp_buff + 1, &jmp_offset, sizeof(jmp_offset));
+    kaji_write_insn(pid, addr, sizeof(jmp_buff), jmp_buff);
+}
+
+void kaji_read_insn(pid_t pid, void* addr, size_t len, unsigned char* insn)
+{
+    int count;
+    for (count = 0; count < len; count += sizeof(long)) {
         long word;
 
         errno = 0;
-        word = ptrace(PTRACE_PEEKTEXT, ppid, addr + count, NULL);
+        word = ptrace(PTRACE_PEEKTEXT, pid, addr + count, NULL);
         _assert(!errno, "PTRACE_PEEKTEXT");
-        memcpy(orig_insn + count, &word, sizeof(long));
-    }*/
+
+        memcpy(insn + count, &word, min(len - count, sizeof(long)));
+    }
 }
 
-int kaji_get_insn_len(void* addr)
+void kaji_write_insn(pid_t pid, void* addr, size_t len, unsigned char* insn)
+{
+    int count;
+    for (count = 0; count < len; count += sizeof(long)) {
+        long word, ret;
+
+        if (len - count < sizeof(long)) {
+            errno = 0;
+            word = ptrace(PTRACE_PEEKTEXT, pid, addr + count, NULL);
+            _assert(!errno, "PTRACE_PEEKTEXT");
+        }
+        memcpy(insn + count, &word, min(len - count, sizeof(long)));
+
+        ret = ptrace(PTRACE_POKETEXT, pid, addr + count, word);
+        _assert(ret != -1, "PTRACE_POKETEXT");
+    }
+}
+
+int kaji_get_insn_len(pid_t pid, void* addr)
 {
     //TODO
     return 4;
