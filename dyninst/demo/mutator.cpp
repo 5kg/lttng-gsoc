@@ -1,15 +1,14 @@
-#include <BPatch.h>
-#include <BPatch_point.h>
-#include <BPatch_function.h>
+#include <dyninst/BPatch.h>
+#include <dyninst/BPatch_point.h>
+#include <dyninst/BPatch_function.h>
 #include <vector>
 
 int main (int argc, const char* argv[]) {
     BPatch bpatch;
-    BPatch_process *proc = bpatch.processCreate(argv[2], argv + 3);
-    //bpatch.setTrampRecursive(true);
-    //bpatch.setSaveFPR(false);
-    //bpatch.setInstrStackFrames(false);
-    //BPatch_process *proc = bpatch.processAttach(argv[1], atoi(argv[2]));
+    BPatch_process *proc = bpatch.processCreate(argv[2], argv + 2);
+    bpatch.setTrampRecursive(true);
+    bpatch.setSaveFPR(false);
+
     BPatch_object *ipa = proc->loadLibrary(argv[1]);
     BPatch_image *image = proc->getImage();
 

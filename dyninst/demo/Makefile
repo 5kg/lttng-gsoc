@@ -1,13 +1,13 @@
 all: dyntp.so mutator mutatee
 
 dyntp.so: dyntp.o
-	gcc -shared  -fPIC -DPIC $^ -ldl -llttng-ust -O2 -o $@
+	gcc -shared  -fPIC -DPIC $^ -ldl -llttng-ust -o $@
 
 dyntp.o: dyntp.c ust_test.h
-	gcc -I. -fno-strict-aliasing -Wall -g -O2 -c $< -fPIC -DPIC -o $@
+	gcc -I. -fno-strict-aliasing -Wall -g -c $< -fPIC -DPIC -o $@
 
 mutator: mutator.o
-	g++ -g $^ -L/usr/lib/dyninst -ldyninstAPI -o $@
+	g++ -g $^ -ldyninstAPI -lsymtabAPI -o $@
 
 mutator.o: mutator.cpp
 	g++ -g $< -c -o $@
