@@ -7,11 +7,6 @@ Author: Zifei Tong <soariez@gmail.com>
     - v0.1: 07/25/2013
         - Initial proposal
 
-Motivation
-----------
-
-TBD
-
 
 Command Line Interface
 ----------------------
@@ -88,29 +83,28 @@ Examples:
 These context types appear in other tracers [4],[5],[6], however implement all of
 them may be not possible within the GSoC schedule.
 
-
-Public API
-----------
-
-TBD.
-
-I need to be more familiar with lttng codebase to give a API proposal.
+The above proposed command line interface require defining tracepoint event at
+runtime thus free user form compiling tracepoint probes themselves. But I have
+a concern such runtime defined tracepoint event mechanism may eventually evolve
+to a tiny compiler/interpreter like Systemtap [7] or gdb [8].
 
 
 Implementation
 --------------
 
 After comparing dyninst with gdb's tracepoint code, I think using dyninst as
-current choice of implementing dynamic instrumentation is more approcate.
-We'll need to a lot of work to
+current choice of implementing dynamic instrumentation is more appropriate.
+gdb's tracepoint function relies on a lot of support code they already have,
+such as disassembler, elf/DWARF parser. We'll need to a lot of work to port all
+the support code.
 
 The underlying technique of these two are quite similar. I will try if I can
 isolate interfaces to make changing back-end of dynamic instrumentation easier
 or even configurable.
 
-The technique behind scene is simple. We replace the instruction with a jmp to
-redirect the control flow to a trampoline. After saving registers in the
-trampoline, we call the probe callback function. Then restore the saved
+The technique behind scene is simple. We replace the instrumented instruction
+with a jmp to redirect the control flow to a trampoline. After saving registers
+in the trampoline, we call the probe callback function. Then restore the saved
 registers, execute the original instruction and jmp back to the original place.
 
 I will give a simple example here.
@@ -152,35 +146,11 @@ like aligning stack. You can refer [3] for a detailed line-by-line analysis
 on dyninst's behavior.
 
 
-A couple of questions I have:
-
-* If we can define the name of tracepoint event at runtime? Thus we can put a
-  common bare probe in lttng-ust library used by all dynamic instrumented
-  tracepoints and free user form compiling tracepoint probes themselves.
-
-  In other words, if we can have something like:
-
-    ```
-    char *event_name = argv[2];
-    tracepoint_with_name(event_name);
-    ```
-  to implement:
-
-    ```
-    # lttng enable-event NAME -u --pid PID --probe ADDR
-    ```
-   
-* Is it possible for add-context to control per-event context?
-  
-  This is to implement
-    
-    ```
-    # lttng add-context -u -e NAME --pid PID -t TYPE
-    ```
-
 [1]: http://bugs.lttng.org/projects/lttng-tools/wiki
 [2]: http://bugs.lttng.org/issues/15
 [3]: https://github.com/5kg/lttng-gsoc/blob/master/notes/dyninst.md
 [4]: http://sourceware.org/systemtap/SystemTap_Beginners_Guide/utargetvariable.html
 [5]: http://sourceware.org/systemtap/SystemTap_Beginners_Guide/ustack.html
 [6]: http://sourceware.org/gdb/onlinedocs/gdb/Tracepoint-Actions.html#Tracepoint-Actions
+[7]: http://sourceware.org/systemtap/SystemTap_Beginners_Guide/understanding-how-systemtap-works.html#understanding-architecture-tools
+[8]: http://sourceware.org/gdb/onlinedocs/gdb/Agent-Expressions.html
