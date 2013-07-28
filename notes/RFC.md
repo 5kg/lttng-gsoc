@@ -29,15 +29,15 @@ Examples:
     # lttng enable-event aname -u --pid 8964 --probe foo+0x6
     # lttng enable-event aname -u --pid 8964 --probe 0xdeadbeef
 
-You can also enable a tracepoint at the entry of a given function:
+You can also enable a tracepoint at the entry/return of a given function:
 
     lttng enable-event NAME -u --pid PID
         --function (addr | symbol | symbol+offset)
-                             Dynamic UST function entry probe.
+                             Dynamic UST function entry/return probe.
                              Addr and offset can be octal (0NNN...),
                              decimal (NNN...) or hexadecimal (0xNNN...)
 
-This will place a bare probe at the entry point of certain function.
+This will place a bare probe at the entry and retutun point of certain function.
 
 Examples:
 
