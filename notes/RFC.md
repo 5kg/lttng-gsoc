@@ -37,7 +37,7 @@ You can also enable a tracepoint at the entry/return of a given function:
                              Addr and offset can be octal (0NNN...),
                              decimal (NNN...) or hexadecimal (0xNNN...)
 
-This will place a bare probe at the entry and retutun point of certain function.
+This will place a bare probe at the entry and return point of certain function.
 
 Examples:
 
