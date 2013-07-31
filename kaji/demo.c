@@ -1,12 +1,19 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+
+void do_stuff()
+{
+    int i;
+    for (i = 0; i < 10; ++i)
+        printf("test\n");
+}
 
 int main()
 {
-    int i;
     printf("Address of main(): %p\n", main);
-    getchar();
-    for (i = 0; i < 10; ++i)
-        printf("test\n");
+    signal(SIGUSR1, do_stuff);
+    pause();
     return 0;
 }

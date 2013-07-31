@@ -8,6 +8,7 @@
 #include <sys/un.h>
 #include <sys/epoll.h>
 
+#include "server.h"
 #include "kaji.h"
 #include "util.h"
 
@@ -30,7 +31,6 @@ void __attribute__ ((constructor)) kaji_init(void)
 void __attribute__ ((destructor)) kaji_fini(void)
 {
 }
-
 
 void* kaji_loop(void *arg)
 {
@@ -85,24 +85,22 @@ void* kaji_loop(void *arg)
             } else {
                 ssize_t count;
                 char buffer[4096];
+                struct kaji_command command;
+                int reply;
 
                 for (;;) {
                     count = read(events[i].data.fd, buffer, sizeof(buffer));
                     if (count == -1) {
                         _assert(errno == EAGAIN, "read");
-                        if (errno != EAGAIN) {
-                            perror("read");
-                            close(events[i].data.fd);
-                            exit(errno);
-                        }
                         break;
                     } else if (count == 0) {
                         break;
                     }
-                    buffer[count] = '\0';
                     if (count > 0) {
-                        void *addr = (void*) strtoul(buffer, NULL, 0);
-                        kaji_install_trampoline(addr);
+                        memcpy(&command, buffer, sizeof(struct kaji_command));
+                        kaji_install_trampoline(command.addr, command.len);
+                        reply = KAJI_REPLY_OK;
+                        write(events[i].data.fd, &reply, sizeof(reply));
                     }
                 }
             }
@@ -130,16 +128,20 @@ void set_nonblocking(int fd)
 }
 
 
-void kaji_install_trampoline(void* addr)
+void kaji_install_trampoline(void* addr, size_t orig_insn_len)
 {
-    size_t orig_insn_len = kaji_get_insn_len(addr);
     unsigned char orig_insn_buff[MAX_INSN_LENGTH];
     int64_t jmp_offset;
     unsigned char jmp_buff[] = { 0xe9, 0, 0, 0 , 0 };
 
-    //kaji_read_insn(pid, addr, orig_insn_len, orig_insn_buff);
-    //kaji_write_insn(pid, __kaji_trampoline_placeholder,
-    //        orig_insn_len, orig_insn_buff);
+    printf("%p\n", addr);
+    printf("%ul\n", orig_insn_len);
+
+    memcpy(orig_insn_buff, addr, orig_insn_len);
+    _dump_mem(orig_insn_buff, orig_insn_len);
+    printf("%p\n", __kaji_trampoline_placeholder);
+    memcpy(__kaji_trampoline_placeholder, orig_insn_buff, orig_insn_len);
+    _dump_mem(__kaji_trampoline_placeholder, orig_insn_len);
 
     jmp_offset = addr - (__kaji_trampoline_placeholder + orig_insn_len);
     memcpy(jmp_buff + 1, &jmp_offset, sizeof(jmp_offset));
@@ -149,12 +151,6 @@ void kaji_install_trampoline(void* addr)
     jmp_offset = kaji_trampoline - addr;
     memcpy(jmp_buff + 1, &jmp_offset, sizeof(jmp_offset));
     //kaji_write_insn(pid, addr, sizeof(jmp_buff), jmp_buff);
-}
-
-int kaji_get_insn_len(void* addr)
-{
-    //TODO
-    return 4;
 }
 
 void kaji_probe()
