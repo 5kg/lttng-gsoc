@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <pthread.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -12,15 +11,18 @@
 #include "kaji.h"
 #include "util.h"
 
+/* Define tracepoint event */
 #define TRACEPOINT_DEFINE
 #define TRACEPOINT_CREATE_PROBES
 #include "ust_kaji_test.h"
 
 #define MAX_LISTEN 16
-#define MAX_EVENTS 64
-#define MAX_INSN_LENGTH 16
+#define MAX_EPOLL_EVENTS 64
 
 #define min(a, b) ( (a) > (b) ? (a) : (b) )
+
+extern void* kaji_trampoline;
+extern void* __kaji_trampoline_placeholder;
 
 void __attribute__ ((constructor)) kaji_init(void)
 {
@@ -30,8 +32,10 @@ void __attribute__ ((constructor)) kaji_init(void)
 
 void __attribute__ ((destructor)) kaji_fini(void)
 {
+    /* TODO */
 }
 
+/* Main in-process-agent event loop */
 void* kaji_loop(void *arg)
 {
     int sock_fd, ret, efd;
@@ -40,6 +44,7 @@ void* kaji_loop(void *arg)
     struct epoll_event ev;
     struct epoll_event *events;
 
+    /* Setup unix domain socket and listen */
     sock_fd = socket(PF_UNIX, SOCK_STREAM, 0);
     _assert(socket >= 0, "socket");
 
@@ -57,6 +62,7 @@ void* kaji_loop(void *arg)
     ret = listen(sock_fd, MAX_LISTEN);
     _assert(ret == 0, "listen");
 
+    /* Setup epoll event loop */
     efd = epoll_create1(0);
     _assert(efd != -1, "epoll_create1");
 
@@ -66,13 +72,16 @@ void* kaji_loop(void *arg)
     ret = epoll_ctl(efd, EPOLL_CTL_ADD, sock_fd, &ev);
     _assert(efd != -1, "epoll_ctl");
 
-    events = calloc(MAX_EVENTS, sizeof(struct epoll_event));
+    events = calloc(MAX_EPOLL_EVENTS, sizeof(struct epoll_event));
+
+    /* Event loop starts here */
     for(;;) {
         int nr_events, i;
 
-        nr_events = epoll_wait(efd, events, MAX_EVENTS, -1);
+        nr_events = epoll_wait(efd, events, MAX_EPOLL_EVENTS, -1);
         for (i = 0; i < nr_events; i++) {
             if (events[i].data.fd == sock_fd) {
+                /* We have a new client, accept it and add to epoll queue*/
                 int conn_fd;
 
                 conn_fd = accept(sock_fd, NULL, 0), ret;
@@ -83,31 +92,28 @@ void* kaji_loop(void *arg)
                 ret = epoll_ctl(efd, EPOLL_CTL_ADD, conn_fd, &ev);
                 _assert(efd != -1, "epoll_ctl");
             } else {
+                /* We've got a new command, handle it */
                 ssize_t count;
                 char buffer[4096];
                 struct kaji_command command;
                 int reply;
 
-                for (;;) {
-                    count = read(events[i].data.fd, buffer, sizeof(buffer));
-                    if (count == -1) {
-                        _assert(errno == EAGAIN, "read");
-                        break;
-                    } else if (count == 0) {
-                        break;
-                    }
-                    if (count > 0) {
-                        memcpy(&command, buffer, sizeof(struct kaji_command));
-                        kaji_install_trampoline(command.addr, command.len);
-                        reply = KAJI_REPLY_OK;
-                        write(events[i].data.fd, &reply, sizeof(reply));
-                    }
+                /* TODO: handle possible partial message */
+                count = read(events[i].data.fd, buffer, sizeof(buffer));
+                if (count > 0) {
+                    _assert(count == sizeof(struct kaji_command), "read");
+
+                    memcpy(&command, buffer, sizeof(struct kaji_command));
+                    kaji_install_trampoline(command.addr, command.len);
+
+                    reply = KAJI_REPLY_OK;
+                    write(events[i].data.fd, &reply, sizeof(reply));
                 }
             }
         }
     }
 
-    // TODO: Mem-leak here
+    // TODO: Fix memory/fd leak here
     free(events);
     close(efd);
     close(sock_fd);
@@ -115,44 +121,26 @@ void* kaji_loop(void *arg)
     return NULL;
 }
 
-void set_nonblocking(int fd)
+/* Install trampoline to instrumented process */
+void kaji_install_trampoline(void* addr, size_t len)
 {
-    int flags, ret;
-
-    flags = fcntl(fd, F_GETFL);
-    _assert(flags >= 0, "fcntl");
-
-    flags |= O_NONBLOCK;
-    ret = fcntl(fd, F_SETFL, flags);
-    _assert(ret != -1, "fcntl");
-}
-
-
-void kaji_install_trampoline(void* addr, size_t orig_insn_len)
-{
-    unsigned char orig_insn_buff[MAX_INSN_LENGTH];
-    int64_t jmp_offset;
     unsigned char jmp_buff[] = { 0xe9, 0, 0, 0 , 0 };
+    int64_t jmp_offset;
 
-    printf("%p\n", addr);
-    printf("%ul\n", orig_insn_len);
-
-    memcpy(orig_insn_buff, addr, orig_insn_len);
-    _dump_mem(orig_insn_buff, orig_insn_len);
-    printf("%p\n", __kaji_trampoline_placeholder);
-    memcpy(__kaji_trampoline_placeholder, orig_insn_buff, orig_insn_len);
-    _dump_mem(__kaji_trampoline_placeholder, orig_insn_len);
-
+    /*
+    memcpy(__kaji_trampoline_placeholder, addr, len);
     jmp_offset = addr - (__kaji_trampoline_placeholder + orig_insn_len);
     memcpy(jmp_buff + 1, &jmp_offset, sizeof(jmp_offset));
-    //kaji_write_insn(pid, __kaji_trampoline_placeholder + orig_insn_len,
-    //        sizeof(jmp_buff), jmp_buff);
+    kaji_write_insn(pid, __kaji_trampoline_placeholder + orig_insn_len,
+            sizeof(jmp_buff), jmp_buff);
 
     jmp_offset = kaji_trampoline - addr;
     memcpy(jmp_buff + 1, &jmp_offset, sizeof(jmp_offset));
-    //kaji_write_insn(pid, addr, sizeof(jmp_buff), jmp_buff);
+    kaji_write_insn(pid, addr, sizeof(jmp_buff), jmp_buff);
+    */
 }
 
+/* This is the instrumented probe */
 void kaji_probe()
 {
     tracepoint(ust_kaji_test, tptest);

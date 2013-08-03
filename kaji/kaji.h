@@ -1,8 +1,10 @@
 #pragma once
 
 struct kaji_command {
-    void *addr;
-    size_t len;
+    void *addr;     /* Address to instrument probe */
+    size_t len;     /* Length of original instruction */
 };
 
-#define KAJI_REPLY_OK 42
+enum kaji_command_reply {
+    KAJI_REPLY_OK = 42,
+};
