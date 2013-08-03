@@ -1,7 +1,9 @@
 .extern kaji_probe
 .section .text
+.align 4096
 .globl kaji_trampoline
 .globl __kaji_trampoline_placeholder
+.globl __kaji_trampoline_end
 kaji_trampoline:
    # We probably need to skip stack red-zone, ignore here
    # Save registers
@@ -34,3 +36,4 @@ kaji_trampoline:
    pop    %rax
 __kaji_trampoline_placeholder:
   .ascii  "Hello, I am a placeholder."
+__kaji_trampoline_end:

@@ -5,7 +5,7 @@ lttng -q create; lttng -q enable-event -a -u; lttng -q start
 LD_PRELOAD=./libkaji.so ./demo & pid=$!
 sleep 1
 
-./client $pid 0x4005e1 5
+./client $pid 0x4005a1 5
 sleep 1
 
 kill -USR1 $pid

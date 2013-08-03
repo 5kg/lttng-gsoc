@@ -56,8 +56,6 @@ int main(int argc, char *argv[])
 
     /* Verify reply form IPA */
     ret = recv(sock_fd, &reply, sizeof(reply), 0);
-    printf("%d\n", ret);
-    printf("%d\n", reply);
     _assert(ret == sizeof(reply) && reply == KAJI_REPLY_OK, "recv");
 
     /* Detach the instrumented process */

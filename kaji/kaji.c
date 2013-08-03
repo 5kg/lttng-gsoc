@@ -21,8 +21,10 @@
 
 #define min(a, b) ( (a) > (b) ? (a) : (b) )
 
-extern void* kaji_trampoline;
-extern void* __kaji_trampoline_placeholder;
+/* Assembly labels declared as functions here to enable relocation*/
+extern void kaji_trampoline();
+extern void __kaji_trampoline_placeholder();
+extern void __kaji_trampoline_end();
 
 void __attribute__ ((constructor)) kaji_init(void)
 {
@@ -127,17 +129,22 @@ void kaji_install_trampoline(void* addr, size_t len)
     unsigned char jmp_buff[] = { 0xe9, 0, 0, 0 , 0 };
     int64_t jmp_offset;
 
-    /*
-    memcpy(__kaji_trampoline_placeholder, addr, len);
-    jmp_offset = addr - (__kaji_trampoline_placeholder + orig_insn_len);
-    memcpy(jmp_buff + 1, &jmp_offset, sizeof(jmp_offset));
-    kaji_write_insn(pid, __kaji_trampoline_placeholder + orig_insn_len,
-            sizeof(jmp_buff), jmp_buff);
+    /* Set memory permission to writable */
+    set_writable(kaji_trampoline, __kaji_trampoline_end - kaji_trampoline);
+    set_writable(addr, len);
 
-    jmp_offset = kaji_trampoline - addr;
+    /* Copy the origin instruction to trampoline */
+    memcpy(__kaji_trampoline_placeholder, addr, len);
+
+    /* Write a jmp from trampoline back to origin code flow */
+    jmp_offset = addr - (void*) (__kaji_trampoline_placeholder + len);
     memcpy(jmp_buff + 1, &jmp_offset, sizeof(jmp_offset));
-    kaji_write_insn(pid, addr, sizeof(jmp_buff), jmp_buff);
-    */
+    memcpy(__kaji_trampoline_placeholder + len, jmp_buff, sizeof(jmp_buff));
+
+    /* Write a jmp to trampoline */
+    jmp_offset = (void*) kaji_trampoline - addr;
+    memcpy(jmp_buff + 1, &jmp_offset, sizeof(jmp_offset));
+    memcpy(addr, jmp_buff, sizeof(jmp_buff));
 }
 
 /* This is the instrumented probe */
