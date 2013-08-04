@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/epoll.h>
+#include <sys/mman.h>
 
 #include "server.h"
 #include "kaji.h"
@@ -25,6 +26,7 @@
 extern void kaji_trampoline();
 extern void __kaji_trampoline_placeholder();
 extern void __kaji_trampoline_end();
+extern void __kaji_trampoline_call();
 
 void __attribute__ ((constructor)) kaji_init(void)
 {
@@ -128,21 +130,36 @@ void kaji_install_trampoline(void* addr, size_t len)
 {
     unsigned char jmp_buff[] = { 0xe9, 0, 0, 0 , 0 };
     int64_t jmp_offset;
+    void *jmp_pad, *placeholder, *probe_addr = (void*) kaji_probe;
+    size_t trampoline_size = __kaji_trampoline_end - kaji_trampoline;
 
     /* Set memory permission to writable */
-    set_writable(kaji_trampoline, __kaji_trampoline_end - kaji_trampoline);
     set_writable(addr, len);
+    set_writable(kaji_trampoline, trampoline_size);
+
+    memcpy(__kaji_trampoline_call + 2, &probe_addr, sizeof(probe_addr));
+
+    /* */
+    jmp_pad = mmap((void*) 0x100000,                    /* address */
+               trampoline_size, /* length */
+               PROT_READ | PROT_WRITE | PROT_EXEC,      /* permission */
+               MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, /* flags */
+               -1,                                      /* fd */
+               0                                        /* offset */);
+    _assert(jmp_pad != MAP_FAILED, "mmap");
+    memcpy(jmp_pad, kaji_trampoline, __kaji_trampoline_end - kaji_trampoline);
+    placeholder = jmp_pad + (__kaji_trampoline_placeholder - kaji_trampoline);
 
     /* Copy the origin instruction to trampoline */
-    memcpy(__kaji_trampoline_placeholder, addr, len);
+    memcpy(placeholder, addr, len);
 
     /* Write a jmp from trampoline back to origin code flow */
-    jmp_offset = addr - (void*) (__kaji_trampoline_placeholder + len);
+    jmp_offset = addr - (void*) (placeholder + len);
     memcpy(jmp_buff + 1, &jmp_offset, sizeof(jmp_offset));
-    memcpy(__kaji_trampoline_placeholder + len, jmp_buff, sizeof(jmp_buff));
+    memcpy(placeholder + len, jmp_buff, sizeof(jmp_buff));
 
     /* Write a jmp to trampoline */
-    jmp_offset = (void*) kaji_trampoline - addr;
+    jmp_offset = (void*) jmp_pad - (addr + len);
     memcpy(jmp_buff + 1, &jmp_offset, sizeof(jmp_offset));
     memcpy(addr, jmp_buff, sizeof(jmp_buff));
 }

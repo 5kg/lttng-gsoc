@@ -4,6 +4,7 @@
 .globl kaji_trampoline
 .globl __kaji_trampoline_placeholder
 .globl __kaji_trampoline_end
+.globl __kaji_trampoline_call
 kaji_trampoline:
    # We probably need to skip stack red-zone, ignore here
    # Save registers
@@ -20,7 +21,9 @@ kaji_trampoline:
    push   %r15
    lea    -0x18(%rsp),%rsp             # align stack
    # Call probe
-   call   kaji_probe@plt
+__kaji_trampoline_call:
+   movabs $0xffffffffffffffff, %rax
+   call   *%rax
    lea    0x18(%rsp),%rsp
    # Restore registers
    pop    %r15
