@@ -129,7 +129,7 @@ void* kaji_loop(void *arg)
 void kaji_install_trampoline(void* addr, size_t len)
 {
     unsigned char jmp_buff[] = { 0xe9, 0, 0, 0 , 0 };
-    int64_t jmp_offset;
+    int32_t jmp_offset;
     void *jmp_pad, *placeholder, *probe_addr = (void*) kaji_probe;
     size_t trampoline_size = __kaji_trampoline_end - kaji_trampoline;
 
