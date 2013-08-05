@@ -1,7 +1,9 @@
-Compile:
+This is a very basic demo of dynamic lttng probe instrumentation.
 
+No third-party library dependencies required. Only x86-64 supported for now.
+
+To compile:
     make
 
-Run:
-
-    LD_PRELOAD=./libkaji.so ./demo
+To run:
+    ./run
