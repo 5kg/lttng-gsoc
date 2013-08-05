@@ -137,9 +137,10 @@ void kaji_install_trampoline(void* addr, size_t len)
     set_writable(addr, len);
     set_writable(kaji_trampoline, trampoline_size);
 
+    /* Rewrite address of probe in trampoline */
     memcpy(__kaji_trampoline_call + 2, &probe_addr, sizeof(probe_addr));
 
-    /* */
+    /* We need to place the jmp pad at lower memory to fit in a jmp instruction */
     jmp_pad = mmap((void*) 0x100000,                    /* address */
                trampoline_size, /* length */
                PROT_READ | PROT_WRITE | PROT_EXEC,      /* permission */

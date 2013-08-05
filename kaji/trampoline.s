@@ -19,12 +19,10 @@ kaji_trampoline:
    push   %r13
    push   %r14
    push   %r15
-   lea    -0x18(%rsp),%rsp             # align stack
-   # Call probe
+   # Call probe, we use a indirect call here
 __kaji_trampoline_call:
    movabs $0xffffffffffffffff, %rax
    call   *%rax
-   lea    0x18(%rsp),%rsp
    # Restore registers
    pop    %r15
    pop    %r14
