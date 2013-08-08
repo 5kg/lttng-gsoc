@@ -6,17 +6,18 @@ Author: Zifei Tong <soariez@gmail.com>
 - Version:
     - v0.1: 07/25/2013
         - Initial proposal
-
+    - v0.2: 08/08/2013
+        - Update
 
 Command Line Interface
 ----------------------
 
 The proposed command line interface is very similar to the current lttng kernel
-dynamic probe interface [1].
+dynamic uprobes interface [1], [9], [10].
 
 To enable a dynamic probe in a running process at given address, you can use:
 
-    lttng enable-event NAME -u --pid PID
+    lttng enable-event NAME -u --path PATH
         --probe (addr | symbol | symbol+offset)
                                Dynamic UST probe.
                                Addr and offset can be octal (0NNN...),
@@ -26,12 +27,12 @@ This will place a bare probe at certain address.
 
 Examples:
 
-    # lttng enable-event aname -u --pid 8964 --probe foo+0x6
-    # lttng enable-event aname -u --pid 8964 --probe 0xdeadbeef
+    # lttng enable-event aname -u --path PATH --probe foo+0x6
+    # lttng enable-event aname -u --path PATH --probe 0xdeadbeef
 
 You can also enable a tracepoint at the entry/return of a given function:
 
-    lttng enable-event NAME -u --pid PID
+    lttng enable-event NAME -u --path PATH
         --function (addr | symbol | symbol+offset)
                              Dynamic UST function entry/return probe.
                              Addr and offset can be octal (0NNN...),
@@ -41,7 +42,7 @@ This will place a bare probe at the entry and return point of certain function.
 
 Examples:
 
-    # lttng enable-event aname -u --pid 8964 --function foo
+    # lttng enable-event aname -u --path PATH --function foo
 
 Being only able to attach and instrument existing processes is sometimes
 restricted. If we can have #15 [2] implemented, then we can extend the command
@@ -61,7 +62,7 @@ Examples:
 Probes collecting context data are more useful than bare ones. We can extend
 the add-context command to support more context types.
 
-    lttng add-context -u -e NAME --pid PID
+    lttng add-context -u -e NAME --path PATH
         -t, --type TYPE     Context type.
                             TYPE can be one of the strings below:
                                 regs
@@ -75,10 +76,10 @@ the add-context command to support more context types.
 
 Examples:
 
-    # lttng add-context -u --pid PID -e aname -t reg:rax
-    # lttng add-context -u --pid PID -e aname -t int:varname:0xdeadbeef
-    # lttng add-context -u --pid PID -e aname -t string:varname:0xdeadbeef
-    # lttng add-context -u --pid PID -e aname -t backtrace
+    # lttng add-context -u --path PATH -e aname -t reg:rax
+    # lttng add-context -u --path PATH -e aname -t int:varname:0xdeadbeef
+    # lttng add-context -u --path PATH -e aname -t string:varname:0xdeadbeef
+    # lttng add-context -u --path PATH -e aname -t backtrace
 
 These context types appear in other tracers [4],[5],[6], however implement all of
 them may be not possible within the GSoC schedule.
@@ -154,3 +155,5 @@ on dyninst's behavior.
 [6]: http://sourceware.org/gdb/onlinedocs/gdb/Tracepoint-Actions.html#Tracepoint-Actions
 [7]: http://sourceware.org/systemtap/SystemTap_Beginners_Guide/understanding-how-systemtap-works.html#understanding-architecture-tools
 [8]: http://sourceware.org/gdb/onlinedocs/gdb/Agent-Expressions.html
+[9]: http://lists.lttng.org/pipermail/lttng-dev/2013-January/019413.html
+[10]: http://lists.lttng.org/pipermail/lttng-dev/2013-January/019414.html
