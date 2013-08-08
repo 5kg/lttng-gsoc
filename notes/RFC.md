@@ -44,20 +44,8 @@ Examples:
 
     # lttng enable-event aname -u --path PATH --function foo
 
-Being only able to attach and instrument existing processes is sometimes
-restricted. If we can have #15 [2] implemented, then we can extend the command
-to support dynamic instrumentation.
-
-    lttng trace -c COMMAND
-        --probe (addr | symbol | symbol+offset)
-        --function (addr | symbol | symbol+offset)
-
-This will execute given program and place probes at certain places.
-
-Examples:
-
-    # lttng trace -c "ls -l" --probe main+0x10
-    # lttng trace -c "ls -l" --function main
+TODO: add note for the requirements of having lttng-ust preloaded. 
+TODO: add description of the helper program to dlopen liblttng-ust.so at runtime.
 
 Probes collecting context data are more useful than bare ones. We can extend
 the add-context command to support more context types.
@@ -146,6 +134,7 @@ This is an oversimplified example. In reality, we need to do more than that,
 like aligning stack. You can refer [3] for a detailed line-by-line analysis
 on dyninst's behavior.
 
+TODO: add notes of the communication between app and sessiond based on the discussion in #lttng.
 
 [1]: http://bugs.lttng.org/projects/lttng-tools/wiki
 [2]: http://bugs.lttng.org/issues/15
