@@ -7,7 +7,7 @@ Author: Zifei Tong <soariez@gmail.com>
     - v0.1: 07/25/2013
         - Initial proposal
     - v0.2: 08/08/2013
-        - Update
+        - Target tracee to executable and shared object instead of process
 
 Command Line Interface
 ----------------------
@@ -15,15 +15,15 @@ Command Line Interface
 The proposed command line interface is very similar to the current lttng kernel
 dynamic uprobes interface [1], [9], [10].
 
-To enable a dynamic probe in a running process at given address, you can use:
+To enable a dynamic probe in a executable/shared object at given offset, you can use:
 
     lttng enable-event NAME -u --path PATH
-        --probe (addr | symbol | symbol+offset)
+        --probe (offset | symbol | symbol+offset)
                                Dynamic UST probe.
-                               Addr and offset can be octal (0NNN...),
+                               Offset can be octal (0NNN...),
                                decimal (NNN...) or hexadecimal (0xNNN...)
 
-This will place a bare probe at certain address.
+This will place a bare probe at certain offset.
 
 Examples:
 
@@ -33,9 +33,9 @@ Examples:
 You can also enable a tracepoint at the entry/return of a given function:
 
     lttng enable-event NAME -u --path PATH
-        --function (addr | symbol | symbol+offset)
+        --function (offset | symbol | symbol+offset)
                              Dynamic UST function entry/return probe.
-                             Addr and offset can be octal (0NNN...),
+                             Offset can be octal (0NNN...),
                              decimal (NNN...) or hexadecimal (0xNNN...)
 
 This will place a bare probe at the entry and return point of certain function.
@@ -62,7 +62,7 @@ Examples:
 Probes collecting context data are more useful than bare ones. We can extend
 the add-context command to support more context types.
 
-    lttng add-context -u -e NAME --path PATH
+    lttng add-context -u -e NAME
         -t, --type TYPE     Context type.
                             TYPE can be one of the strings below:
                                 regs
@@ -76,10 +76,10 @@ the add-context command to support more context types.
 
 Examples:
 
-    # lttng add-context -u --path PATH -e aname -t reg:rax
-    # lttng add-context -u --path PATH -e aname -t int:varname:0xdeadbeef
-    # lttng add-context -u --path PATH -e aname -t string:varname:0xdeadbeef
-    # lttng add-context -u --path PATH -e aname -t backtrace
+    # lttng add-context -u -e aname -t reg:rax
+    # lttng add-context -u -e aname -t int:varname:0xdeadbeef
+    # lttng add-context -u -e aname -t string:varname:0xdeadbeef
+    # lttng add-context -u -e aname -t backtrace
 
 These context types appear in other tracers [4],[5],[6], however implement all of
 them may be not possible within the GSoC schedule.
