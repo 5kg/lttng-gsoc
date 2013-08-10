@@ -44,7 +44,12 @@ Examples:
 
     # lttng enable-event aname -u --path PATH --function foo
 
-TODO: add note for the requirements of having lttng-ust preloaded. 
+Unless an application registered itself to sessiond, we cannot instrument the app since
+we do not have per PID tracing domain implemented to specify a process to trace and also
+not able to utilize uprobes facilities provided by kernel. Thus, we'll require the
+application to have lttng-ust library loaded to register to sessiond and enable dynamic
+instrumentation.
+
 TODO: add description of the helper program to dlopen liblttng-ust.so at runtime.
 
 Probes collecting context data are more useful than bare ones. We can extend
