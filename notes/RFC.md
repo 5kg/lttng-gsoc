@@ -50,7 +50,9 @@ not able to utilize uprobes facilities provided by kernel. Thus, we'll require t
 application to have lttng-ust library loaded to register to sessiond and enable dynamic
 instrumentation.
 
-TODO: add description of the helper program to dlopen liblttng-ust.so at runtime.
+Applications could load the lttng-ust library at compiling time or use LD_PRELOAD. We can
+also provide a helper program to load the lttng-ust library into a running process. This
+could be implemented using dyninst or with reference to r_inject [11].
 
 Probes collecting context data are more useful than bare ones. We can extend
 the add-context command to support more context types.
@@ -151,3 +153,4 @@ TODO: add notes of the communication between app and sessiond based on the discu
 [8]: http://sourceware.org/gdb/onlinedocs/gdb/Agent-Expressions.html
 [9]: http://lists.lttng.org/pipermail/lttng-dev/2013-January/019413.html
 [10]: http://lists.lttng.org/pipermail/lttng-dev/2013-January/019414.html
+[11]: https://github.com/ngitalis/r_inject
