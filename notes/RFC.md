@@ -141,7 +141,13 @@ This is an oversimplified example. In reality, we need to do more than that,
 like aligning stack. You can refer [3] for a detailed line-by-line analysis
 on dyninst's behavior.
 
-TODO: add notes of the communication between app and sessiond based on the discussion in #lttng.
+To enable dynamic instrumentation in shared objects, we could maintain a data structure (hash-table)
+recording all shared library loaded by the application. This could be implemented with `dl_iterate_phdr` [12].
+Therefore, when sessioned sends all enabled events to applications, the application can do right
+instrumentation accordingly.
+
+We can also hook the linker with rtld-audit functionality to watch for events of new objects loaded and
+unloaded. Thus we can instrument shared objects loaded after tracing started.
 
 [1]: http://bugs.lttng.org/projects/lttng-tools/wiki
 [2]: http://bugs.lttng.org/issues/15
@@ -154,3 +160,4 @@ TODO: add notes of the communication between app and sessiond based on the discu
 [9]: http://lists.lttng.org/pipermail/lttng-dev/2013-January/019413.html
 [10]: http://lists.lttng.org/pipermail/lttng-dev/2013-January/019414.html
 [11]: https://github.com/ngitalis/r_inject
+[12]: http://bugs.lttng.org/issues/474
