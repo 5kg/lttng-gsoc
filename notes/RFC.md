@@ -6,62 +6,58 @@ Author: Zifei Tong <soariez@gmail.com>
 - Version:
     - v0.1: 07/25/2013
         - Initial proposal
-
+    - v0.2: 08/08/2013
+        - Target tracee to executable and shared object instead of process
 
 Command Line Interface
 ----------------------
 
 The proposed command line interface is very similar to the current lttng kernel
-dynamic probe interface [1].
+dynamic uprobes interface [1], [9], [10].
 
-To enable a dynamic probe in a running process at given address, you can use:
+To enable a dynamic probe in a executable/shared object at given offset, you can use:
 
-    lttng enable-event NAME -u --pid PID
-        --probe (addr | symbol | symbol+offset)
+    lttng enable-event NAME -u --path PATH
+        --probe (offset | symbol | symbol+offset)
                                Dynamic UST probe.
-                               Addr and offset can be octal (0NNN...),
+                               Offset can be octal (0NNN...),
                                decimal (NNN...) or hexadecimal (0xNNN...)
 
-This will place a bare probe at certain address.
+This will place a bare probe at certain offset.
 
 Examples:
 
-    # lttng enable-event aname -u --pid 8964 --probe foo+0x6
-    # lttng enable-event aname -u --pid 8964 --probe 0xdeadbeef
+    # lttng enable-event aname -u --path PATH --probe foo+0x6
+    # lttng enable-event aname -u --path PATH --probe 0xdeadbeef
 
 You can also enable a tracepoint at the entry/return of a given function:
 
-    lttng enable-event NAME -u --pid PID
-        --function (addr | symbol | symbol+offset)
+    lttng enable-event NAME -u --path PATH
+        --function (offset | symbol | symbol+offset)
                              Dynamic UST function entry/return probe.
-                             Addr and offset can be octal (0NNN...),
+                             Offset can be octal (0NNN...),
                              decimal (NNN...) or hexadecimal (0xNNN...)
 
 This will place a bare probe at the entry and return point of certain function.
 
 Examples:
 
-    # lttng enable-event aname -u --pid 8964 --function foo
+    # lttng enable-event aname -u --path PATH --function foo
 
-Being only able to attach and instrument existing processes is sometimes
-restricted. If we can have #15 [2] implemented, then we can extend the command
-to support dynamic instrumentation.
+Unless an application registered itself to sessiond, we cannot instrument the app since
+we do not have per PID tracing domain implemented to specify a process to trace and also
+not able to utilize uprobes facilities provided by kernel. Thus, we'll require the
+application to have lttng-ust library loaded to register to sessiond and enable dynamic
+instrumentation.
 
-    lttng trace -c COMMAND
-        --probe (addr | symbol | symbol+offset)
-        --function (addr | symbol | symbol+offset)
-
-This will execute given program and place probes at certain places.
-
-Examples:
-
-    # lttng trace -c "ls -l" --probe main+0x10
-    # lttng trace -c "ls -l" --function main
+Applications could load the lttng-ust library at compiling time or use LD_PRELOAD. We can
+also provide a helper program to load the lttng-ust library into a running process. This
+could be implemented using dyninst or with reference to r_inject [11].
 
 Probes collecting context data are more useful than bare ones. We can extend
 the add-context command to support more context types.
 
-    lttng add-context -u -e NAME --pid PID
+    lttng add-context -u -e NAME
         -t, --type TYPE     Context type.
                             TYPE can be one of the strings below:
                                 regs
@@ -75,10 +71,10 @@ the add-context command to support more context types.
 
 Examples:
 
-    # lttng add-context -u --pid PID -e aname -t reg:rax
-    # lttng add-context -u --pid PID -e aname -t int:varname:0xdeadbeef
-    # lttng add-context -u --pid PID -e aname -t string:varname:0xdeadbeef
-    # lttng add-context -u --pid PID -e aname -t backtrace
+    # lttng add-context -u -e aname -t reg:rax
+    # lttng add-context -u -e aname -t int:varname:0xdeadbeef
+    # lttng add-context -u -e aname -t string:varname:0xdeadbeef
+    # lttng add-context -u -e aname -t backtrace
 
 These context types appear in other tracers [4],[5],[6], however implement all of
 them may be not possible within the GSoC schedule.
@@ -145,6 +141,13 @@ This is an oversimplified example. In reality, we need to do more than that,
 like aligning stack. You can refer [3] for a detailed line-by-line analysis
 on dyninst's behavior.
 
+To enable dynamic instrumentation in shared objects, we could maintain a data structure (hash-table)
+recording all shared library loaded by the application. This could be implemented with `dl_iterate_phdr` [12].
+Therefore, when sessioned sends all enabled events to applications, the application can do right
+instrumentation accordingly.
+
+We can also hook the linker with rtld-audit functionality to watch for events of new objects loaded and
+unloaded. Thus we can instrument shared objects loaded after tracing started.
 
 [1]: http://bugs.lttng.org/projects/lttng-tools/wiki
 [2]: http://bugs.lttng.org/issues/15
@@ -154,3 +157,7 @@ on dyninst's behavior.
 [6]: http://sourceware.org/gdb/onlinedocs/gdb/Tracepoint-Actions.html#Tracepoint-Actions
 [7]: http://sourceware.org/systemtap/SystemTap_Beginners_Guide/understanding-how-systemtap-works.html#understanding-architecture-tools
 [8]: http://sourceware.org/gdb/onlinedocs/gdb/Agent-Expressions.html
+[9]: http://lists.lttng.org/pipermail/lttng-dev/2013-January/019413.html
+[10]: http://lists.lttng.org/pipermail/lttng-dev/2013-January/019414.html
+[11]: https://github.com/ngitalis/r_inject
+[12]: http://bugs.lttng.org/issues/474
