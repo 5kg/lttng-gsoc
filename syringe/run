@@ -1,0 +1,13 @@
+#!/bin/sh
+
+lttng -q create; lttng -q enable-event -a -u; lttng -q start
+
+./demo & pid=$!
+sleep 1
+
+./syringe $pid libdummy.so dummy
+sleep 1
+
+kill -USR1 $pid
+wait $pid
+lttng -q stop; sleep 1; lttng view; lttng -q destroy
