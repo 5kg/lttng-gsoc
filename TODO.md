@@ -7,3 +7,6 @@
 * ~~PKGBUILD for Dyninst -- https://aur.archlinux.org/packages/dyninst~~
 * ~~A minimal IPA demo: kaji~~
 * RFC for lttng-tools UI and notes of different dynamic instrumentation techniques
+* Known issues:
+  * Reduce size of ustcomm_notify_instrument_msg, look up fields in hash-table in sessiond instead
+  * Find a better place to call lttng_probe_instrument
