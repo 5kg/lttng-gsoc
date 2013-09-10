@@ -1,11 +1,26 @@
 #include <lttng/ust-events.h>
 #include <lttng/tracepoint.h>
+#include <lttng/ringbuffer-config.h>
 #include <stdlib.h>
 
-/* A dummy probe */
-void probe(void)
+/* The probe function */
+void probe(struct lttng_event* __tp_data)
 {
-    printf("Nani????\n");
+    struct lttng_event *__event = (struct lttng_event *) __tp_data;
+    struct lttng_channel *__chan = __event->chan;
+    struct lttng_ust_lib_ring_buffer_ctx __ctx;
+    size_t __event_len, __event_align;
+    int __ret;
+
+    __event_len = 0;
+    __event_align = 0;
+    lib_ring_buffer_ctx_init(&__ctx, __chan->chan, __event, __event_len,
+                 __event_align, -1, __chan->handle);
+    __ctx.ip = __builtin_return_address(0);
+    __ret = __chan->ops->event_reserve(&__ctx, __event->id);
+    if (__ret < 0)
+        return;
+    __chan->ops->event_commit(&__ctx);
 }
 
 /*
@@ -27,7 +42,7 @@ const struct tracepoint *test_tracepoints[] = { &test_tracepoint };
 /* Define a tracepoint event */
 struct lttng_event_desc test_event_desc = {
     .name = "test:testevent",
-    .probe_callback = probe,
+    .probe_callback = (void (*)()) probe,
     .ctx = NULL,
     .fields = NULL,
     .nr_fields = 0,
@@ -48,6 +63,7 @@ struct lttng_probe_desc desc = {
     .minor = LTTNG_UST_PROVIDER_MINOR,
 };
 
+/* Tracepoint callback, call the probe function */
 void __tracepoint_cb(const struct tracepoint* __tracepoint)
 {
     struct tracepoint_probe *__tp_probe;
@@ -56,10 +72,11 @@ void __tracepoint_cb(const struct tracepoint* __tracepoint)
     do {
         void (*__tp_cb)(void) = __tp_probe->func;
         void *__tp_data = __tp_probe->data;
-        URCU_FORCE_CAST(void (*)(), __tp_cb)();
+        URCU_FORCE_CAST(void (*)(struct lttng_event*), __tp_cb)(__tp_data);
     } while ((++__tp_probe)->func);
 }
 
+/* Runtime tracepoint */
 void tracepoint_of(const struct tracepoint* __tracepoint)
 {
     if (caa_unlikely(__tracepoint->state))
@@ -68,11 +85,15 @@ void tracepoint_of(const struct tracepoint* __tracepoint)
 
 int main()
 {
+    int i;
+
+    /* Register tracepoint */
     tracepoint_register_lib(&test_tracepoints, 1);
-    /* Do the registration */
+    /* Register probe */
     lttng_probe_register(&desc);
 
-    tracepoint_of(test_tracepoints[0]);
+    for (i = 0; i < 10; ++i)
+        tracepoint_of(test_tracepoints[0]);
 
     return 0;
 }
