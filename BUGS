@@ -1,2 +1,3 @@
 * Deadlock between dyninst and lttng-ust: http://lists.lttng.org/pipermail/lttng-dev/2013-May/020509.html
 * Compile dynamic probes with -O2 will cause "#100: Image: Unable to find function"
+* Size of pointers are different if sessiond and the tracer are compiled for different arch, say x86 vs x86-64
